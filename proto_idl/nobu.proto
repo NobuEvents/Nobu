@@ -1,0 +1,24 @@
+syntax = "proto3";
+package github.proto.nobu;
+
+option java_package = "org.nobuevents.service.nobu";
+
+option go_package = "github.com/nobuevents/nobu/gen/proto/nobupb";
+
+message NobuEvent {
+  int64 timestamp = 1;
+  string host = 2;
+  string type = 3;
+  int64 offset = 4;
+  bytes message = 5;
+}
+
+message NobuReply {
+  bool ok = 1;
+}
+
+service NobuService {
+  rpc SendNobu(NobuEvent) returns (NobuReply) {}
+  rpc StreamNobu(stream NobuEvent) returns (NobuReply) {}
+
+}
