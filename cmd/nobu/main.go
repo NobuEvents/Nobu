@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/NobuEvents/Nobu/pkg/inputs/http_server"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 var Config = struct {
@@ -24,6 +27,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("HTTP server listening at http://%s/", httpServer.Listener.Addr())
-	select {}
+
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	select {
+	case s := <-sigCh:
+		log.Printf("Caught signal %s.", s)
+		httpServer.Close()
+	}
 }

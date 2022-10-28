@@ -15,6 +15,7 @@ func TestServer(t *testing.T) {
 	server, err := NewServer(Config{ListenAddress: "localhost:0"})
 	require.NoError(t, err)
 	defer server.Close()
+	go server.Server()
 
 	resp, err := http.Post(
 		fmt.Sprintf("http://%s/", server.Listener.Addr()),
@@ -29,7 +30,7 @@ func TestServer(t *testing.T) {
 
 	require.Equal(t, 1, len(server.Output()), "len(server.Output())")
 	assert.Equal(t, <-server.Output(), events.Event{
-		Timestamp: 1,
-		Type:      "cheetos",
+		TimestampNs: 1,
+		Type:        "cheetos",
 	})
 }

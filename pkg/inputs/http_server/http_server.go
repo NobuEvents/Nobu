@@ -24,12 +24,16 @@ type Response struct {
 	Error  string `json:"error,omitempty"`
 }
 
+const StatusOK = "ok"
+const StatusError = "error"
+
 type Server struct {
 	Config
 	HttpServer *http.Server
 	Listener   net.Listener
 
 	output    chan events.Event
+	serveOnce sync.Once
 	closeOnce sync.Once
 }
 
@@ -40,7 +44,7 @@ func NewServer(config Config) (*Server, error) {
 	}
 
 	output := make(chan events.Event, 64)
-	server := &Server{
+	return &Server{
 		Config: config,
 		HttpServer: &http.Server{
 			Addr:    config.ListenAddress,
@@ -48,15 +52,20 @@ func NewServer(config Config) (*Server, error) {
 		},
 		Listener: listener,
 		output:   output,
-	}
-
-	go func() {
-		log.Println(server.HttpServer.Serve(server.Listener))
-	}()
-	return server, nil
+	}, nil
 }
 
 func (x *Server) Output() <-chan events.Event { return x.output }
+
+func (x *Server) Server() {
+	x.serveOnce.Do(func() {
+		log.Printf("http server listening at http://%s/", x.Listener.Addr())
+		if err := x.HttpServer.Serve(x.Listener); err != http.ErrServerClosed {
+			log.Printf("http.Server.Serve() failed: %v", err)
+		}
+		log.Println("http server closed")
+	})
+}
 
 func (x *Server) Close() {
 	x.closeOnce.Do(func() {
@@ -69,28 +78,39 @@ func (x *Server) Close() {
 	})
 }
 
-func httpHandler(input chan<- events.Event) func(w http.ResponseWriter, r *http.Request) {
+func httpHandler(output chan<- events.Event) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+
 		var request Request
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-			err := json.NewEncoder(w).Encode(Response{
-				Status: "error",
+			log.Printf("json.Decode() failed: %v", err)
+			if err := json.NewEncoder(w).Encode(Response{
+				Status: StatusError,
 				Error:  fmt.Sprintf("json.Decode() failed: %s", err),
-			})
-			if err != nil {
+			}); err != nil {
 				log.Printf("w.Write() failed: %s", err)
 			}
+			return
 		}
 
+		acceptedEvents := make([]events.Event, 0, len(request.Events))
 		for _, event := range request.Events {
-			input <- event
+			if err := event.Validate(); err != nil {
+				log.Printf("event.Validate() failed: %v", err)
+				continue
+			}
+			acceptedEvents = append(acceptedEvents, event.FillEmtpyFields())
 		}
 
-		err := json.NewEncoder(w).Encode(Response{
-			Status: "ok",
-			Count:  len(request.Events),
-		})
-		if err != nil {
+		for _, event := range acceptedEvents {
+			output <- event
+		}
+
+		if err := json.NewEncoder(w).Encode(Response{
+			Status: StatusOK,
+			Count:  len(acceptedEvents),
+		}); err != nil {
 			log.Printf("w.Write() failed: %s", err)
 		}
 	}
