@@ -13,8 +13,6 @@ func TestEvent_FillEmtpyFields(t *testing.T) {
 	event := Event{}.FillEmtpyFields()
 	assert.LessOrEqual(t, before.UnixNano(), event.TimestampNs, "Event.TimestampNs")
 	assert.GreaterOrEqual(t, time.Now().UnixNano(), event.TimestampNs, "Event.TimestampNs")
-	assert.Equal(t, "tester", event.Host, "Event.Host")
-	assert.Equal(t, int64(1), event.Offset, "Event.Offset")
 }
 
 func TestEvent_Validate(t *testing.T) {

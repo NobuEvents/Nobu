@@ -37,11 +37,5 @@ func (e Event) FillEmtpyFields() Event {
 	if e.TimestampNs == 0 {
 		e.TimestampNs = time.Now().UnixNano()
 	}
-	if e.Host == "" {
-		e.Host = hostname
-	}
-	if e.Offset == 0 {
-		e.Offset = nextOffset()
-	}
 	return e
 }
