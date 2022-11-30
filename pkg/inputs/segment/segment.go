@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/NobuEvents/Nobu/pkg/events"
+	"github.com/NobuEvents/Nobu/pkg/inputs"
 	"io"
 	"log"
 	"net"
@@ -97,5 +98,12 @@ func httpHandler(output chan<- events.Event) func(w http.ResponseWriter, r *http
 			log.Printf("event.Validate() failed: %v", err)
 		}
 		output <- *event
+
+		if err := json.NewEncoder(w).Encode(inputs.Response{
+			Status: inputs.StatusOK,
+			Count:  1,
+		}); err != nil {
+			log.Printf("w.Write() failed: %s", err)
+		}
 	}
 }

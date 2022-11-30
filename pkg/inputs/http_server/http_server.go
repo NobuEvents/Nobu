@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/NobuEvents/Nobu/pkg/events"
+	"github.com/NobuEvents/Nobu/pkg/inputs"
 	"log"
 	"net"
 	"net/http"
@@ -17,15 +18,6 @@ type Config struct {
 type Request struct {
 	Events []events.Event `json:"events"`
 }
-
-type Response struct {
-	Status string `json:"status"`
-	Count  int    `json:"count"`
-	Error  string `json:"error,omitempty"`
-}
-
-const StatusOK = "ok"
-const StatusError = "error"
 
 type Server struct {
 	Config
@@ -85,8 +77,8 @@ func httpHandler(output chan<- events.Event) func(w http.ResponseWriter, r *http
 		var request Request
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			log.Printf("json.Decode() failed: %v", err)
-			if err := json.NewEncoder(w).Encode(Response{
-				Status: StatusError,
+			if err := json.NewEncoder(w).Encode(inputs.Response{
+				Status: inputs.StatusError,
 				Error:  fmt.Sprintf("json.Decode() failed: %s", err),
 			}); err != nil {
 				log.Printf("w.Write() failed: %s", err)
@@ -107,8 +99,8 @@ func httpHandler(output chan<- events.Event) func(w http.ResponseWriter, r *http
 			output <- event
 		}
 
-		if err := json.NewEncoder(w).Encode(Response{
-			Status: StatusOK,
+		if err := json.NewEncoder(w).Encode(inputs.Response{
+			Status: inputs.StatusOK,
 			Count:  len(acceptedEvents),
 		}); err != nil {
 			log.Printf("w.Write() failed: %s", err)
