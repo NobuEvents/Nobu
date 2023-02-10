@@ -1,0 +1,59 @@
+package com.nobu.server;
+
+import com.lmax.disruptor.RingBuffer;
+import com.nobu.event.NobuEvent;
+import com.nobu.queue.DisruptorQueueFactory;
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.annotations.QuarkusMain;
+import org.jboss.logging.Logger;
+
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+
+
+@Path("/event")
+@QuarkusMain
+@ApplicationScoped
+public class Server {
+
+    private static final Logger LOG = Logger.getLogger(Server.class);
+
+    @Inject
+    DisruptorQueueFactory disruptorQueueFactory;
+
+    @PostConstruct
+    public void init() {
+        LOG.info("DisruptorQueue created");
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String event(NobuEvent event) {
+        LOG.info(event);
+        var disruptorQueue = disruptorQueueFactory.get(event.getType());
+        if (disruptorQueue == null) {
+            LOG.error("No disruptor queue for type " + event.getType());
+            return "error";
+        }
+        RingBuffer<NobuEvent> ringBuffer = disruptorQueue.getRingBuffer();
+        long sequence = ringBuffer.next();
+        NobuEvent nobuEvent = ringBuffer.get(sequence);
+        nobuEvent.setType(event.getType());
+        nobuEvent.setMessage(event.getMessage());
+        nobuEvent.setTimestamp(event.getTimestamp());
+        nobuEvent.setHost(event.getHost());
+        nobuEvent.setOffset(event.getOffset());
+        ringBuffer.publish(sequence);
+        return "ok";
+    }
+
+    public static void main(String... args) {
+        LOG.info("Running main method");
+        Quarkus.run(args);
+    }
+}
