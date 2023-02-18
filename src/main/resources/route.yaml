@@ -1,0 +1,19 @@
+routes:
+  - type: signup
+    target: kafka
+    format: json
+    schema_url: https://nobu.com/schemata/signup
+    config:
+      bootstrap_server: localhost:5050
+  - type: signup
+    format: json
+    schema_url: https://nobu.com/schemata/signup
+    target: segment
+    config:
+      url: https://nobu.segment.com/webhook
+  - type: purchase
+    format: json
+    schema_url: https://nobu.com/schemata/purchase
+    target: console
+    config:
+      url: https://nobu.segment.com/webhook
