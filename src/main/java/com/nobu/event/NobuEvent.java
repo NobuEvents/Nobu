@@ -59,13 +59,7 @@ public class NobuEvent implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Event{");
-        sb.append("type='").append(type).append('\'');
-        sb.append(", message=").append(Arrays.toString(message));
-        sb.append(", timestampNs=").append(timestamp);
-        sb.append(", host='").append(host).append('\'');
-        sb.append(", offset=").append(offset);
-        sb.append('}');
-        return sb.toString();
+        return String.format("Event{type=%s, message=%s, timestampNs=$d, host=%s, offset=%d}",
+                type, Arrays.toString(message), timestamp, host, offset);
     }
 }

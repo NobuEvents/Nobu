@@ -9,8 +9,12 @@ import io.quarkus.logging.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadFactory;
 
-
+/***
+ * LMax Disruptor Broadcasting Queue implementation for dynamic event publishing
+ * See: <a href="https://github.com/lmax-io/disruptor/blob/master">LMax Disruptor</a>
+ */
 public class DisruptorQueue {
 
     private final Disruptor<NobuEvent> eventDisruptor;
@@ -19,10 +23,18 @@ public class DisruptorQueue {
     private final String name;
 
     public DisruptorQueue(String name) {
-        this.eventDisruptor = new Disruptor<>(NobuEvent::new, DEFAULT_BUFFER_SIZE, new ConsumerThreadFactory(name));
+        this.eventDisruptor = new Disruptor<>(NobuEvent::new, DEFAULT_BUFFER_SIZE, getVirtualThreadFactory(name));
         this.eventHandlerList = new ArrayList<>();
         this.name = name;
         Log.info("Disruptor Initialized for the type:" + this.name);
+    }
+
+    private ThreadFactory getVirtualThreadFactory(String name) {
+        return Thread
+                .ofVirtual()
+                .name(name)
+                .uncaughtExceptionHandler(new ConsumerUncaughtExceptionHandler())
+                .factory();
     }
 
     public void addHandle(final EventHandler<NobuEvent> handler) {
