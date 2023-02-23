@@ -13,9 +13,10 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.io.File;
+
 import java.io.IOException;
 import java.util.Optional;
 
@@ -42,6 +43,12 @@ public class RouteScheduler {
         startDisruptor(this.routeConfig.getRoutes());
     }
 
+    @PreDestroy
+    public void terminate() {
+        LOG.info("Terminating Route Scheduler");
+        disruptorQueueFactory.terminate();
+    }
+
     private void startDisruptor(Route[] routes) {
         for (var route : routes) {
             if (disruptorQueueFactory.get(route.getType()) == null) {
@@ -55,11 +62,13 @@ public class RouteScheduler {
         LOG.info("Disruptor started");
     }
 
-    private Optional<RouteConfig> buildRouteConfig(String configFile) {
+    private Optional<RouteConfig> buildRouteConfig(String path) {
         try {
+            var reader = new ConfigFileReader();
+            var configFile = reader.apply(path).orElseThrow(RuntimeException::new);
             var mapper = new ObjectMapper(new YAMLFactory());
             mapper.findAndRegisterModules();
-            return Optional.of(mapper.readValue(new File(configFile), RouteConfig.class));
+            return Optional.of(mapper.readValue(configFile, RouteConfig.class));
         } catch (IOException e) {
             LOG.error("Route config not able to read", e);
         }
