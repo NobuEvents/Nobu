@@ -48,6 +48,7 @@ public class Server {
         nobuEvent.setTimestamp(event.getTimestamp());
         nobuEvent.setHost(event.getHost());
         nobuEvent.setOffset(event.getOffset());
+        // Run data quality
         ringBuffer.publish(sequence);
         return "ok";
     }

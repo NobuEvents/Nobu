@@ -1,4 +1,4 @@
-package nobu.server;
+package com.nobu.server;
 
 import com.nobu.event.NobuEvent;
 import io.quarkus.test.junit.QuarkusTest;

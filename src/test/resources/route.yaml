@@ -2,12 +2,26 @@ routes:
   - type: signup
     target: kafka
     format: json
-    schema_url: https://nobu.com/schema/signup
+    schema_url: model/activity.schema.yaml
     config:
       bootstrap_server: localhost:5050
+      topic: signup_kafka
+  - type: signup
+    target: kafka
+    format: json
+    schema_url: https://nobu.com/schemata/signup
+    config:
+      bootstrap_server: zendesk:5050
+      topic: signup_kafka_zendesk
   - type: signup
     format: json
-    schema_url: https://nobu.com/schema/signup
+    schema_url: https://nobu.com/schemata/signup
     target: segment
+    config:
+      url: https://nobu.segment.com/webhook
+  - type: purchase
+    format: json
+    schema_url: https://nobu.com/schemata/purchase
+    target: console
     config:
       url: https://nobu.segment.com/webhook

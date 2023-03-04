@@ -5,6 +5,14 @@ routes:
     schema_url: https://nobu.com/schemata/signup
     config:
       bootstrap_server: localhost:5050
+      topic: signup_kafka
+  - type: signup
+    target: kafka
+    format: json
+    schema_url: https://nobu.com/schemata/signup
+    config:
+      bootstrap_server: zendesk:5050
+      topic: signup_kafka_zendesk
   - type: signup
     format: json
     schema_url: https://nobu.com/schemata/signup
