@@ -94,7 +94,6 @@ public class SchemaLoader {
                     // Recursively call the method if the path is a directory
                     readFilesRecursively(path.toFile().getAbsolutePath(), fileExtensionFilter);
                 } else if (path.toString().endsWith(fileExtensionFilter)) {
-                    System.out.println("Reading schema file " + path.toString());
                     SchemaFactory.get(path.toString()).ifPresent(schema -> schemaMap.putAll(schema.getSchemaMap()));
                 }
             }

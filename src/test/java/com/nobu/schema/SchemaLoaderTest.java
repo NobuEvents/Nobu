@@ -21,7 +21,7 @@ public class SchemaLoaderTest {
 
         assertEquals("workflow", loader.getSchemaMap().get("add_widget").getDomain());
 
-        String expected = "event == 'signup' && phone_number > 200";
+        String expected = "event == 'signup' && phone_number > 200 && user.phone > 2";
         assertEquals(expected, loader.getSchemaMap().get("signup").getTest().getDlq()[0]);
 
     }

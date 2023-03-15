@@ -13,7 +13,7 @@ public class CelManagerTest {
     public void testComplexExpression() {
         String expr = """
                 account.balance >= transaction.withdrawal
-                    || (overdraftProtection
+                    || (overdraftProtection == true
                     && book.overdraftLimit >= transaction.withdrawal  - account.balance)
                 """;
         var celManager = new CelManager();
@@ -25,8 +25,7 @@ public class CelManagerTest {
         assert mapType.count() == 1;
 
         var anyType = decls.stream().filter(decl -> decl.getName().equalsIgnoreCase("overdraftProtection")
-                && decl.getIdent().getType().hasWellKnown()
-                && decl.getIdent().getType().getWellKnown().equals(Type.WellKnownType.ANY)
+                && decl.getIdent().getType().hasPrimitive()
         );
         assert anyType.count() == 1;
 
@@ -55,7 +54,8 @@ public class CelManagerTest {
         String expr = "event == 'signup' && phone > 200 && balance < 20.0 && active == true";
         var celManager = new CelManager();
         var decls = celManager.buildDecls(expr);
-        System.out.println(decls);
+        assert decls.stream().filter(decl -> decl.getName().equalsIgnoreCase("balance")
+                && decl.getIdent().getType().hasPrimitive()).count() == 1;
     }
 
 
