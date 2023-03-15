@@ -2,6 +2,7 @@ package com.nobu.cel;
 
 import com.google.api.expr.v1alpha1.Decl;
 import com.google.api.expr.v1alpha1.Expr;
+import com.google.api.expr.v1alpha1.Type;
 import org.jboss.logging.Logger;
 import org.projectnessie.cel.Ast;
 import org.projectnessie.cel.Env;
@@ -11,25 +12,32 @@ import org.projectnessie.cel.tools.ScriptCreateException;
 import org.projectnessie.cel.tools.ScriptHost;
 import org.projectnessie.cel.types.jackson.JacksonRegistry;
 
+import javax.inject.Singleton;
 import java.util.*;
 
 import static org.projectnessie.cel.Env.newCustomEnv;
 
-
+@Singleton
 public class CelManager {
 
+    /**
+     * A MultiMap of schema to list of scripts
+     */
     private final SchemaValidatorMap map = new SchemaValidatorMap();
+
     private static final Logger LOG = Logger.getLogger(CelManager.class);
 
-    public void addScript(String schema, String rule) {
+    public void addScript(String schema, String[] rules) {
         ScriptHost scriptHost = ScriptHost.newBuilder().build();
         try {
-            Script script = scriptHost.buildScript(rule)
-                    .withDeclarations(buildDecls(rule))
-                    .build();
-            map.put(schema, script);
+            for (String rule : rules) {
+                Script script = scriptHost.buildScript(rule)
+                        .withDeclarations(buildDecls(rule))
+                        .build();
+                map.put(schema, script);
+            }
         } catch (ScriptCreateException e) {
-            e.printStackTrace();
+            LOG.error("Error creating CEL script for schema:" + schema, e);
         }
     }
 
@@ -53,7 +61,9 @@ public class CelManager {
         }
         var argList = expr.getCallExpr().getArgsList(); // List<Expr>
 
+        String name = null;
         for (Expr arg : argList) {
+
             if (arg.hasSelectExpr() && arg.getSelectExpr().hasOperand() && arg.getSelectExpr().getOperand().hasIdentExpr()) {
                 String value = arg.getSelectExpr().getOperand().getIdentExpr().getName();
                 if (!uniqueDeclNames.contains(value)) {
@@ -63,14 +73,31 @@ public class CelManager {
             } else if (arg.hasIdentExpr()) {
                 String value = arg.getIdentExpr().getName();
                 if (!uniqueDeclNames.contains(value)) {
-                    decls.add(Decls.newVar(value, Decls.Any));
+                    name = value;
                 }
-                uniqueDeclNames.add(value);
+                uniqueDeclNames.add(name);
+            } else if (arg.hasConstExpr()) {
+                if (name != null) {
+                    decls.add(Decls.newVar(name, getType(arg.getConstExpr().getConstantKindCase().name())));
+                    name = null;
+                }
             }
-
             callExpr(arg, decls, uniqueDeclNames);
         }
 
+    }
+
+    private Type getType(String valueType) {
+        if (valueType == null || valueType.isEmpty()) {
+            return Decls.Any;
+        }
+        return switch (valueType.toLowerCase()) {
+            case "string_value" -> Decls.String;
+            case "int64_value" -> Decls.Int;
+            case "double_value" -> Decls.Double;
+            case "bool_value" -> Decls.Bool;
+            default -> Decls.Any;
+        };
     }
 
     public List<Script> getScript(String schema) {

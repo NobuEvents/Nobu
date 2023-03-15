@@ -2,125 +2,54 @@ package com.nobu.cel;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.expr.v1alpha1.Decl;
 import com.nobu.event.NobuEvent;
-import org.projectnessie.cel.Ast;
-import org.projectnessie.cel.Env;
-import org.projectnessie.cel.checker.Decls;
-import org.projectnessie.cel.tools.Script;
-import org.projectnessie.cel.tools.ScriptCreateException;
+import com.nobu.schema.SchemaLoader;
+import org.jboss.logging.Logger;
 import org.projectnessie.cel.tools.ScriptException;
-import org.projectnessie.cel.tools.ScriptHost;
-import org.projectnessie.cel.types.jackson.JacksonRegistry;
 
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import static org.projectnessie.cel.Env.newCustomEnv;
-
-public class CelValidator {
+import java.util.function.Predicate;
 
 
-    public static boolean validate(final NobuEvent event) throws IOException, ScriptException {
+@Singleton
+public class CelValidator implements Predicate<NobuEvent> {
 
-        // Get Schema for the event type
+    private static final Logger LOG = Logger.getLogger(CelValidator.class);
 
-        ObjectMapper mapper = new ObjectMapper();
-        TypeReference<HashMap<String, Object>> typeRef
-                = new TypeReference<>() {
-        };
-        Map<String, Object> map = mapper.readValue(event.getMessage(), typeRef);
+    @Inject
+    SchemaLoader schemaLoader;
 
-        // System.out.println(map);
+    /***
+     * Execute the CEL script for the schema
+     * @param event The event to be validated
+     * @return true if the event passes the validation
+     */
+    @Override
+    public boolean test(NobuEvent event) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {
 
-        //var scriptHost = ScriptHost.newBuilder().registry(JacksonRegistry.newRegistry()).build();
+            };
+            Map<String, Object> map = mapper.readValue(event.getMessage(), typeRef);
+            var scripts = schemaLoader.getCelManager().getScript(event.getSchema());
 
-        Env env = newCustomEnv(JacksonRegistry.newRegistry(), List.of());
+            int trueCount = 0;
+            for (var script : scripts) {
+                if (script.execute(Boolean.class, map)) {
+                    trueCount++;
+                }
+            }
+            return trueCount == scripts.size();
 
-        String expr = """
-                account.balance >= transaction.withdrawal
-                    || (account.overdraftProtection
-                    && account.overdraftLimit >= transaction.withdrawal  - account.balance)
-                """;
-
-        Env.AstIssuesTuple astIss = env.parse(expr);
-        if (astIss.hasIssues()) {
-            throw new ScriptCreateException("parse failed", astIss.getIssues());
+        } catch (IOException | ScriptException e) {
+            LOG.error("Error executing CEL script for nobu schema" + event.getSchema(), e);
         }
-        Ast ast = astIss.getAst();
-
-        ast.getSourceInfo().getPositionsMap().forEach((k, v) -> {
-            System.out.println(k + " " + v);
-        });
-
-        //System.out.println(ast.getExpr());
-
-        /*
-        Script script = scriptHost.buildScript("event == signup")
-                // Variable declarations - we need `inp` +  `checkName` in this example
-                .withDeclarations(
-                        //Decls.newVar("nobu", Decls.newObjectType(Map.class.getName())),
-                        Decls.newVar("event", Decls.String),
-                        Decls.newVar("signup", Decls.String)
-                )
-                // Register our Jackson object input type
-                .withTypes(Map.class)
-                .build();
-
-        System.out.println("========");
-
-        Map<String, Object> arguments = new HashMap<>();
-        //arguments.put("nobu", map);
-        arguments.put("event", "signup");
-
-        Boolean result = script.execute(Boolean.class, arguments);
-        System.out.println(result);*/
-
-        return true;
+        return false;
     }
-
-    public void sample() throws ScriptException {
-        // Build the script factory
-        ScriptHost scriptHost = ScriptHost.newBuilder().build();
-
-        // create the script, will be parsed and checked
-        Script script = scriptHost.buildScript("x == 'hello'")
-                .withDeclarations(
-                        // Variable declarations - we need `x` and `y` in this example
-                        Decls.newVar("x", Decls.String),
-                        Decls.newVar("y", Decls.String))
-                //Decls.newVar("hello", Decls.String))
-                .build();
-
-        Map<String, Object> arguments = new HashMap<>();
-        arguments.put("x", "hello");
-        arguments.put("y", "world");
-
-        Boolean result = script.execute(Boolean.class, arguments);
-
-        System.out.println(result); // Prints "hello world"
-    }
-
-    public Boolean validateWithNobu(NobuEvent event) throws IOException, ScriptException {
-        ObjectMapper mapper = new ObjectMapper();
-        TypeReference<HashMap<String, Object>> typeRef
-                = new TypeReference<>() {
-        };
-        Map<String, Object> map = mapper.readValue(event.getMessage(), typeRef);
-        ScriptHost scriptHost = ScriptHost.newBuilder().build();
-        Script script = scriptHost.buildScript("event == 'signup' && user.phone > 8")
-                .withDeclarations(
-                        // Variable declarations - we need `x` and `y` in this example
-                        Decls.newVar("event", Decls.String),
-                        Decls.newVar("client", Decls.String),
-                        Decls.newVar("user", Decls.newMapType(Decls.String, Decls.Any))
-                )
-                .build();
-
-        return script.execute(Boolean.class, map);
-
-    }
-
 }

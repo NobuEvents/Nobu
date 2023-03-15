@@ -1,27 +1,39 @@
-routes:
-  - type: signup
-    target: kafka
-    format: json
-    schema_url: model/activity.schema.yaml
+connections:
+  front_kafka:
+    type: kafka
+    impl: com.nobu.connect.kafka.KafkaConnector
     config:
       bootstrap_server: localhost:5050
-      topic: signup_kafka
-  - type: signup
-    target: kafka
-    format: json
-    schema_url: https://nobu.com/schemata/signup
+  zendesk_kafka:
+    type: kafka
+    impl: com.nobu.connect.kafka.KafkaConnector
     config:
       bootstrap_server: zendesk:5050
+  segment_main:
+    type: segment
+    impl: com.nobu.connect.segment.SegmentConnector
+    config:
+      url: https://nobu.segment.com/webhook
+  console_main:
+    type: console
+    impl: com.nobu.connect.console.ConsoleConnector
+    config:
+      url: https://nobu.segment.com/webhook
+
+routes:
+  - type: signup
+    target: front_kafka
+    config:
+      topic: signup_kafka_front
+  - type: signup
+    target: zendesk_kafka
+    config:
       topic: signup_kafka_zendesk
   - type: signup
-    format: json
-    schema_url: https://nobu.com/schemata/signup
-    target: segment
+    target: segment_main
     config:
       url: https://nobu.segment.com/webhook
   - type: purchase
-    format: json
-    schema_url: https://nobu.com/schemata/purchase
-    target: console
+    target: console_main
     config:
       url: https://nobu.segment.com/webhook

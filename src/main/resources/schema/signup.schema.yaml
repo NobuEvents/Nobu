@@ -45,13 +45,13 @@ schemas:
         is_pii: true
     tests:
       dlq:
-        - event == 'signup' && phone_number > 200 && user.phone > 2
+        - event == 'signup' && phone_number > 200
 
   add_widget:
     type: event
     description: A widget was added
     owner: Growth Team
-    domain: workflow
+    domain: core
     compliance_owner: Legal Team
     channel: https://slack.com/nobu
     email: growth@nobu.com

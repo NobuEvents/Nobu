@@ -22,7 +22,7 @@ public class SchemaBuilderTest {
         assertEquals("core", signupSchema.getDomain());
 
         var test = signupSchema.getTest();
-        assertEquals("event == 'signup' && phone_number > 10", test.getDlq()[0]);
+        assertEquals("event == 'signup' && phone_number > 200", test.getDlq()[0]);
 
         var fields = signupSchema.getFields();
         assertEquals("long", fields.get("account_id").getType());

@@ -35,10 +35,10 @@ public class CelManagerTest {
     @Test
     public void testSimpleExpression() {
 
-        String expr = "event == 'signup' && user.phone > 8";
+        String expr = "event == 'signup' && user.phone == -20 && account.balance >= transaction.withdrawal";
         var celManager = new CelManager();
         var decls = celManager.buildDecls(expr);
-        String[] expected = new String[]{"event", "user"};
+        String[] expected = new String[]{"event", "user", "account", "transaction"};
         Arrays.sort(expected);
         var result = decls.stream().map(Decl::getName).sorted().toArray(String[]::new);
         assert Arrays.equals(expected, result);
@@ -47,5 +47,16 @@ public class CelManagerTest {
                 && decl.getIdent().getType().hasMapType());
 
         assert typeCheck.count() == 1;
+
     }
+
+    @Test
+    public void testTopLevelPrimitive() {
+        String expr = "event == 'signup' && phone > 200 && balance < 20.0 && active == true";
+        var celManager = new CelManager();
+        var decls = celManager.buildDecls(expr);
+        System.out.println(decls);
+    }
+
+
 }

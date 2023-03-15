@@ -1,0 +1,28 @@
+package com.nobu.schema;
+
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Test;
+
+import javax.inject.Inject;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@QuarkusTest
+public class SchemaLoaderTest {
+
+    @Inject
+    public SchemaLoader loader;
+
+    @Test
+    public void testSchemaLoader() {
+
+        assertTrue(loader.getSchemaMap().size() > 0);
+
+        assertEquals("workflow", loader.getSchemaMap().get("add_widget").getDomain());
+
+        String expected = "event == 'signup' && phone_number > 200";
+        assertEquals(expected, loader.getSchemaMap().get("signup").getTest().getDlq()[0]);
+
+    }
+}

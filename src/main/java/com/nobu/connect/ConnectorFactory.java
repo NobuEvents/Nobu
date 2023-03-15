@@ -1,31 +1,30 @@
 package com.nobu.connect;
 
 
-import com.nobu.connect.console.ConsoleConnector;
-import com.nobu.connect.kafka.KafkaConnector;
-import com.nobu.connect.segment.SegmentConnector;
+import com.nobu.exception.RouteConfigException;
+import com.nobu.route.RouteFactory;
 
-import javax.annotation.PostConstruct;
+
 import javax.inject.Singleton;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+
 
 @Singleton
 public class ConnectorFactory {
 
-    private ConcurrentHashMap<String, Connector> connectors;
 
-    @PostConstruct
-    public void init() {
-        connectors = new ConcurrentHashMap<>();
-        connectors.put("kafka", new KafkaConnector());
-        connectors.put("segment", new SegmentConnector());
-        connectors.put("console", new ConsoleConnector());
-    }
+    public Connector getConnector(String target,
+                                  RouteFactory.Connection connection,
+                                  Map<String, String> routeConfig) {
 
-
-    public Connector getConnector(String connectorName) {
-        return connectors.get(connectorName);
+        try {
+            Connector connector = (Connector) Class.forName(connection.getImpl()).getDeclaredConstructor().newInstance();
+            connector.initialize(target, connection, routeConfig);
+            return connector;
+        } catch (Exception e) {
+            throw new RouteConfigException("Unable to initialize the connector:", e);
+        }
     }
 
 }
