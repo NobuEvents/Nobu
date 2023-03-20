@@ -40,7 +40,10 @@ public class Server {
     public String event(NobuEvent event) {
         LOG.info(event);
 
-        celValidator.test(event);
+        if(!celValidator.test(event)) {
+            LOG.error("CEL validation failed");
+            return "error";
+        }
 
         var disruptorQueue = disruptorQueueFactory.get(event.getType());
         if (disruptorQueue == null) {

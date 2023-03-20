@@ -1,7 +1,6 @@
 package com.nobu.cel;
 
 import com.google.api.expr.v1alpha1.Decl;
-import com.google.api.expr.v1alpha1.Type;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -57,6 +56,5 @@ public class CelManagerTest {
         assert decls.stream().filter(decl -> decl.getName().equalsIgnoreCase("balance")
                 && decl.getIdent().getType().hasPrimitive()).count() == 1;
     }
-
 
 }

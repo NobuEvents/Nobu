@@ -29,21 +29,21 @@ public class CelManager {
 
     public void addScript(String schema, String[] rules) {
         ScriptHost scriptHost = ScriptHost.newBuilder().build();
-        try {
-            for (String rule : rules) {
-                Script script = scriptHost.buildScript(rule)
+        Arrays.stream(rules).forEach(rule -> {
+            Script script = null;
+            try {
+                script = scriptHost.buildScript(rule)
                         .withDeclarations(buildDecls(rule))
                         .build();
-                map.put(schema, script);
+            } catch (ScriptCreateException e) {
+                LOG.error("Error creating CEL script for schema:" + schema, e);
             }
-        } catch (ScriptCreateException e) {
-            LOG.error("Error creating CEL script for schema:" + schema, e);
-        }
+            map.put(schema, script);
+        });
     }
 
     public List<Decl> buildDecls(String rule) {
         List<Decl> decls = new ArrayList<>();
-        Set<String> uniqueDeclNames = new HashSet<>();
         Env env = newCustomEnv(JacksonRegistry.newRegistry(), List.of());
         Env.AstIssuesTuple astIss = env.parse(rule);
         if (astIss.hasIssues()) {
@@ -51,40 +51,57 @@ public class CelManager {
             return decls;
         }
         Ast ast = astIss.getAst();
-        callExpr(ast.getExpr(), decls, uniqueDeclNames);
+        var callExpr = ast.getExpr().getCallExpr();
+        return callExprRecursive(callExpr, ast.getExpr(), new HashSet<>(), decls);
+    }
+
+    public List<Decl> callExprRecursive(Expr.Call callExpr, Expr parentArg, Set<String> visitedNode, List<Decl> decls) {
+        for (var argValue : callExpr.getArgsList()) {
+            if (argValue.hasCallExpr()) {
+                callExprRecursive(argValue.getCallExpr(), argValue, visitedNode, decls);
+            } else {
+                var argList = parentArg.getCallExpr().getArgsList();
+                if (argList.size() != 2) {
+                    LOG.error("Error parsing schema validation rule:" + argList);
+                    return decls;
+                }
+                var left = argList.get(0);
+                var right = argList.get(1);
+
+                extractOperands(visitedNode, decls, left, right);
+                extractIdent(visitedNode, decls, left, right);
+            }
+        }
         return decls;
     }
 
-    public void callExpr(Expr expr, List<Decl> decls, Set<String> uniqueDeclNames) {
-        if (!expr.hasCallExpr()) {
-            return;
-        }
-        var argList = expr.getCallExpr().getArgsList(); // List<Expr>
-
-        String name = null;
-        for (Expr arg : argList) {
-
-            if (arg.hasSelectExpr() && arg.getSelectExpr().hasOperand() && arg.getSelectExpr().getOperand().hasIdentExpr()) {
-                String value = arg.getSelectExpr().getOperand().getIdentExpr().getName();
-                if (!uniqueDeclNames.contains(value)) {
-                    decls.add(Decls.newVar(value, Decls.newMapType(Decls.String, Decls.Any)));
-                }
-                uniqueDeclNames.add(value);
-            } else if (arg.hasIdentExpr()) {
-                String value = arg.getIdentExpr().getName();
-                if (!uniqueDeclNames.contains(value)) {
-                    name = value;
-                }
-                uniqueDeclNames.add(name);
-            } else if (arg.hasConstExpr()) {
-                if (name != null) {
-                    decls.add(Decls.newVar(name, getType(arg.getConstExpr().getConstantKindCase().name())));
-                    name = null;
-                }
+    private void extractIdent(Set<String> visitedNode, List<Decl> decls, Expr left, Expr right) {
+        if (left.hasIdentExpr()) {
+            String value = left.getIdentExpr().getName();
+            if (!visitedNode.contains(value)) {
+                decls.add(Decls.newVar(value, getType(right.getConstExpr().getConstantKindCase().name())));
             }
-            callExpr(arg, decls, uniqueDeclNames);
+            visitedNode.add(value);
         }
+    }
 
+    private static void extractOperands(Set<String> visitedNode, List<Decl> decls, Expr left, Expr right) {
+        if (left.hasSelectExpr()) {
+            parseOperands(visitedNode, decls, left);
+        }
+        if (right.hasSelectExpr()) {
+            parseOperands(visitedNode, decls, right);
+        }
+    }
+
+    private static void parseOperands(Set<String> visitedNode, List<Decl> decls, Expr expr) {
+        if (expr.hasSelectExpr() && expr.getSelectExpr().hasOperand() && expr.getSelectExpr().getOperand().hasIdentExpr()) {
+            String value = expr.getSelectExpr().getOperand().getIdentExpr().getName();
+            if (!visitedNode.contains(value)) {
+                decls.add(Decls.newVar(value, Decls.newMapType(Decls.String, Decls.Any)));
+            }
+            visitedNode.add(value);
+        }
     }
 
     private Type getType(String valueType) {
