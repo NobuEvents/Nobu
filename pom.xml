@@ -7,9 +7,9 @@
     <artifactId>nobu</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
-        <compiler-plugin.version>3.10.1</compiler-plugin.version>
-        <maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>
+        <compiler-plugin.version>3.11.0</compiler-plugin.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
@@ -130,11 +130,11 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler-plugin.version}</version>
                 <configuration>
-                    <compilerArgs>
+                    <!--<compilerArgs>
                         <arg>-parameters</arg>
-                        <arg>--add-modules=jdk.incubator.concurrent</arg>
-                        <arg>--enable-preview</arg>
-                    </compilerArgs>
+                        <arg>&#45;&#45;add-modules=jdk.incubator.concurrent</arg>
+                        <arg>&#45;&#45;enable-preview</arg>
+                    </compilerArgs>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -145,7 +145,7 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
-                    <argLine>--enable-preview</argLine>
+                    <!--<argLine>&#45;&#45;enable-preview</argLine>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -172,8 +172,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>19</source>
-                    <target>19</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
         </plugins>

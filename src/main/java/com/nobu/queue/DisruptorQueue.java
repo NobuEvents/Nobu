@@ -6,10 +6,10 @@ import com.lmax.disruptor.dsl.Disruptor;
 import com.nobu.event.NobuEvent;
 import io.quarkus.logging.Log;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
+
 
 /***
  * LMax Disruptor Broadcasting Queue implementation for dynamic event publishing
@@ -17,37 +17,44 @@ import java.util.concurrent.ThreadFactory;
  */
 public class DisruptorQueue {
 
-    private final Disruptor<NobuEvent> eventDisruptor;
-    private final List<EventHandler<NobuEvent>> eventHandlerList;
-    private static final int DEFAULT_BUFFER_SIZE = 1024;
-    private final String name;
+  private final Disruptor<NobuEvent> eventDisruptor;
+  private final List<EventHandler<NobuEvent>> eventHandlerList;
+  private static final int DEFAULT_BUFFER_SIZE = 1024;
 
-    public DisruptorQueue(String name) {
-        this.eventDisruptor = new Disruptor<>(NobuEvent::new, DEFAULT_BUFFER_SIZE, getVirtualThreadFactory(name));
-        this.eventHandlerList = new ArrayList<>();
-        this.name = name;
-        Log.info("Disruptor Initialized for the type:" + this.name);
-    }
+  public DisruptorQueue(String name) {
+    this.eventDisruptor = new Disruptor<>(NobuEvent::new, DEFAULT_BUFFER_SIZE, getThreadFactory(name));
+    this.eventHandlerList = new ArrayList<>();
+    Log.info("Disruptor Initialized for the type:" + name);
+  }
 
-    private ThreadFactory getVirtualThreadFactory(String name) {
+    /*private ThreadFactory getVirtualThreadFactory(String name) {
         return Thread
-                .ofVirtual()
+                //.ofVirtual()
                 .name(name)
                 .uncaughtExceptionHandler(new ConsumerUncaughtExceptionHandler())
                 .factory();
-    }
+    }*/
 
-    public void addHandle(final EventHandler<NobuEvent> handler) {
-        eventHandlerList.add(handler);
-    }
+  private ThreadFactory getThreadFactory(String name) {
+    return r -> {
+      Thread t = new Thread(r);
+      t.setUncaughtExceptionHandler(new ConsumerUncaughtExceptionHandler());
+      t.setName(name);
+      return t;
+    };
+  }
 
-    public RingBuffer<NobuEvent> getRingBuffer() {
-        return eventDisruptor.getRingBuffer();
-    }
+  public void addHandle(final EventHandler<NobuEvent> handler) {
+    eventHandlerList.add(handler);
+  }
 
-    public void start() {
-        EventHandler<NobuEvent>[] handler = new EventHandler[eventHandlerList.size()];
-        eventDisruptor.handleEventsWith(eventHandlerList.toArray(handler));
-        eventDisruptor.start();
-    }
+  public RingBuffer<NobuEvent> getRingBuffer() {
+    return eventDisruptor.getRingBuffer();
+  }
+
+  public void start() {
+    EventHandler<NobuEvent>[] handler = new EventHandler[eventHandlerList.size()];
+    eventDisruptor.handleEventsWith(eventHandlerList.toArray(handler));
+    eventDisruptor.start();
+  }
 }

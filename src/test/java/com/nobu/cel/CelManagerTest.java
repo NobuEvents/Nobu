@@ -16,6 +16,7 @@ public class CelManagerTest {
                     && book.overdraftLimit >= transaction.withdrawal  - account.balance)
                 """;
         var celManager = new CelManager();
+
         var decls = celManager.buildDecls(expr);
 
         var mapType = decls.stream().filter(decl -> decl.getName().equalsIgnoreCase("account")
