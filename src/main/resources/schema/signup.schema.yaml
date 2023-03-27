@@ -1,0 +1,83 @@
+schemas:
+  signup:
+    type: entity
+    description: A signup event
+    owner: Growth Team
+    domain: core
+    compliance_owner: Legal Team
+    channel: https://slack.com/nobu
+    email: growth@nobu.com
+    status: active
+    see_also:
+      - https://nobu.com/schemata/purchase
+    subscribers:
+      - Sales Team
+      - Marketing Team
+      - Customer Support Team
+      - Machine Learning Team
+    fields:
+      name:
+        type: string
+        description: The name of the user
+        is_pii: true
+      account_id:
+        type: long
+        description: The account_id of the user
+        key:
+          type: foreign
+          target: account
+          target_field: id
+      email:
+        type: string
+        description: The email of the user
+        is_pii: true
+      password:
+        type: string
+        description: The password of the user
+        is_pii: true
+      date_of_birth:
+        type: date
+        description: The date of birth of the user
+        is_pii: true
+      ip_address:
+        type: string
+        description: The ip_address of the user
+        is_pii: true
+    tests:
+      dlq:
+        - event == 'signup' && phone_number > 200
+
+  add_widget:
+    type: event
+    description: A widget was added
+    owner: Growth Team
+    domain: core
+    compliance_owner: Legal Team
+    channel: https://slack.com/nobu
+    email: growth@nobu.com
+    status: active
+    see_also:
+      - https://nobu.com/schemata/arr
+    subscribers:
+      - Sales Team
+      - Marketing Team
+      - Customer Support Team
+      - Machine Learning Team
+    fields:
+      widget_id:
+        type: long
+        description: The id of the widget
+        key:
+          type: primary
+      widget_name:
+        type: string
+        description: The name of the widget
+      widget_type:
+        type: string
+        description: The type of the widget
+      widget_timestamp:
+        type: timestamp
+        description: The timestamp of the widget
+    tests:
+      dlq:
+        - event == 'add_widget' && widget_id > 200

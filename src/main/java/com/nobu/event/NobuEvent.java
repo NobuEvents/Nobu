@@ -9,6 +9,8 @@ public class NobuEvent implements Serializable {
 
     private String type;
 
+    private String schema;
+
     private Long timestamp;
 
     private String host;
@@ -57,9 +59,26 @@ public class NobuEvent implements Serializable {
         return offset;
     }
 
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
     @Override
     public String toString() {
         return String.format("Event{type=%s, message=%s, timestampNs=$d, host=%s, offset=%d}",
                 type, Arrays.toString(message), timestamp, host, offset);
+    }
+
+    public void deepCopy(NobuEvent event) {
+        this.type = event.getType();
+        this.schema = event.getSchema();
+        this.message = event.getMessage();
+        this.timestamp = event.getTimestamp();
+        this.host = event.getHost();
+        this.offset = event.getOffset();
     }
 }

@@ -1,6 +1,7 @@
 package com.nobu.server;
 
 import com.lmax.disruptor.RingBuffer;
+import com.nobu.cel.CelValidator;
 import com.nobu.event.NobuEvent;
 import com.nobu.queue.DisruptorQueueFactory;
 import io.quarkus.runtime.Quarkus;
@@ -25,6 +26,9 @@ public class Server {
     @Inject
     DisruptorQueueFactory disruptorQueueFactory;
 
+    @Inject
+    CelValidator celValidator;
+
     @PostConstruct
     public void init() {
         LOG.info("DisruptorQueue created");
@@ -35,6 +39,12 @@ public class Server {
     @Produces(MediaType.APPLICATION_JSON)
     public String event(NobuEvent event) {
         LOG.info(event);
+
+        if(!celValidator.test(event)) {
+            LOG.error("CEL validation failed");
+            return "error";
+        }
+
         var disruptorQueue = disruptorQueueFactory.get(event.getType());
         if (disruptorQueue == null) {
             LOG.error("No disruptor queue for type " + event.getType());
@@ -43,11 +53,10 @@ public class Server {
         RingBuffer<NobuEvent> ringBuffer = disruptorQueue.getRingBuffer();
         long sequence = ringBuffer.next();
         NobuEvent nobuEvent = ringBuffer.get(sequence);
-        nobuEvent.setType(event.getType());
-        nobuEvent.setMessage(event.getMessage());
-        nobuEvent.setTimestamp(event.getTimestamp());
-        nobuEvent.setHost(event.getHost());
-        nobuEvent.setOffset(event.getOffset());
+        nobuEvent.deepCopy(event);
+        // Run data quality checks
+
+
         ringBuffer.publish(sequence);
         return "ok";
     }

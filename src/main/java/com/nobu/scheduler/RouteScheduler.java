@@ -1,13 +1,11 @@
 package com.nobu.scheduler;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.nobu.connect.Connector;
 import com.nobu.connect.ConnectorFactory;
 import com.nobu.queue.DisruptorQueue;
 import com.nobu.queue.DisruptorQueueFactory;
-import com.nobu.route.Route;
-import com.nobu.route.RouteConfig;
+import com.nobu.route.RouteFactory;
 import io.quarkus.runtime.Startup;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
@@ -17,8 +15,8 @@ import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import java.io.IOException;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Objects;
 
 
 @Startup
@@ -27,7 +25,7 @@ public class RouteScheduler {
 
     private static final Logger LOG = Logger.getLogger(RouteScheduler.class);
 
-    private RouteConfig routeConfig;
+    private RouteFactory routeFactory;
 
     @Inject
     DisruptorQueueFactory disruptorQueueFactory;
@@ -39,8 +37,9 @@ public class RouteScheduler {
     public void initialize() {
         LOG.info("Initializing Route Scheduler");
         var configFile = ConfigProvider.getConfig().getValue("router.config", String.class);
-        this.routeConfig = buildRouteConfig(configFile).orElseThrow(RuntimeException::new);
-        startDisruptor(this.routeConfig.getRoutes());
+        routeFactory = RouteFactory.get(configFile);
+        routeFactory.validateRouteConfig();
+        startDisruptor(routeFactory);
     }
 
     @PreDestroy
@@ -49,33 +48,35 @@ public class RouteScheduler {
         disruptorQueueFactory.terminate();
     }
 
-    private void startDisruptor(Route[] routes) {
-        for (var route : routes) {
+    /***
+     * Initialize the disruptor queue and register the connection handlers
+     * If the queue is not found in the factory, create a new queue and register it
+     * Register one disruptor queue per route type; one type can have multiple routes
+     * @param routeFactory RouteFactory configuration file
+     */
+    private void startDisruptor(RouteFactory routeFactory) {
+        for (var route : routeFactory.getRoutes()) {
             if (disruptorQueueFactory.get(route.getType()) == null) {
                 var queue = new DisruptorQueue(route.getType());
                 disruptorQueueFactory.put(route.getType(), queue);
             }
-            LOG.info("Registering Connection Handler: " + connectorFactory.getConnector(route.getTarget()));
-            disruptorQueueFactory.get(route.getType()).addHandle(connectorFactory.getConnector(route.getTarget()));
+
+            LOG.info("Registering Connection Handler: " + getConnector(route, routeFactory.getConnectionMap()));
+            Objects.requireNonNull(disruptorQueueFactory.get(route.getType()))
+                    .addHandle(getConnector(route, routeFactory.getConnectionMap()));
         }
         disruptorQueueFactory.start();
         LOG.info("Disruptor started");
     }
 
-    private Optional<RouteConfig> buildRouteConfig(String path) {
-        try {
-            var reader = new ConfigFileReader();
-            var configFile = reader.apply(path).orElseThrow(RuntimeException::new);
-            var mapper = new ObjectMapper(new YAMLFactory());
-            mapper.findAndRegisterModules();
-            return Optional.of(mapper.readValue(configFile, RouteConfig.class));
-        } catch (IOException e) {
-            LOG.error("Route config not able to read", e);
-        }
-        return Optional.empty();
+    private Connector getConnector(RouteFactory.Route route, Map<String, RouteFactory.Connection> connectionMap) {
+        return connectorFactory.getConnector(route.getTarget(),
+                connectionMap.get(route.getTarget()), route.getConfig());
     }
 
-    public RouteConfig getRouteConfig() {
-        return this.routeConfig;
+
+    public RouteFactory getRouteConfig() {
+        return this.routeFactory;
     }
+
 }
