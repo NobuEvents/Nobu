@@ -222,17 +222,56 @@ public class SchemaFactory {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Test {
+      private Map<String, QueryMeta> tests;
 
-        private String[] dlq;
+      public Map<String, QueryMeta> getTests() {
+        return tests;
+      }
 
-        public String[] getDlq() {
-            return dlq;
+      public void setTests(Map<String, QueryMeta> tests) {
+        this.tests = tests;
+      }
+
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QueryMeta {
+        private String name;
+        private String query;
+        private String description;
+        private String target;
+
+        public String getName() {
+            return name;
         }
 
-        public void setDlq(String[] value) {
-            this.dlq = value;
+        public void setName(String name) {
+            this.name = name;
         }
 
+        public String getQuery() {
+            return query;
+        }
+
+        public void setQuery(String query) {
+            this.query = query;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public String getTarget() {
+            return target;
+        }
+
+        public void setTarget(String target) {
+            this.target = target;
+        }
     }
 
     @Override

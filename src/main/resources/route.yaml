@@ -9,6 +9,12 @@ connections:
     impl: com.nobu.connect.kafka.KafkaConnector
     config:
       bootstrap_server: zendesk:5050
+  dlq_kafka:
+    type: kafka
+    impl: com.nobu.connect.kafka.KafkaConnector
+    config:
+      topic: dlq_kafka
+      bootstrap_server: dlq:5050
   segment_main:
     type: segment
     impl: com.nobu.connect.segment.SegmentConnector

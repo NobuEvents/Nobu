@@ -19,6 +19,12 @@ connections:
     impl: com.nobu.connect.console.ConsoleConnector
     config:
       url: https://nobu.segment.com/webhook
+  dlq_kafka:
+    type: kafka
+    impl: com.nobu.connect.kafka.KafkaConnector
+    config:
+      topic: dlq_kafka
+      bootstrap_server: dlq:5050
 
 routes:
   - type: signup

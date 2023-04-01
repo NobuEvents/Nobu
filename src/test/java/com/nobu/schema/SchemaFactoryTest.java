@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SchemaBuilderTest {
+public class SchemaFactoryTest {
 
     @Test
     public void testSchemaFactory() {
@@ -21,8 +21,8 @@ public class SchemaBuilderTest {
         assertEquals("entity", signupSchema.getType());
         assertEquals("core", signupSchema.getDomain());
 
-        var test = signupSchema.getTest();
-        assertEquals("event == 'signup' && phone_number > 200 && user.phone > 2", test.getDlq()[0]);
+        SchemaFactory.QueryMeta test= signupSchema.getTest().getTests().get("dlq");
+        assertEquals("event == 'signup' && phone_number > 200 && user.phone > 2", test.getQuery());
 
         var fields = signupSchema.getFields();
         assertEquals("long", fields.get("account_id").getType());
