@@ -3,12 +3,16 @@ connections:
     type: kafka
     impl: com.nobu.connect.kafka.KafkaConnector
     config:
-      bootstrap_server: localhost:5050
+      bootstrap.servers: localhost:5050
+      acks: 1
+      batch.size: 16384
+      linger.ms: 5
+      max.request.size: 1000
   zendesk_kafka:
     type: kafka
     impl: com.nobu.connect.kafka.KafkaConnector
     config:
-      bootstrap_server: zendesk:5050
+      bootstrap.servers: localhost:5051
   segment_main:
     type: segment
     impl: com.nobu.connect.segment.SegmentConnector
@@ -23,8 +27,8 @@ connections:
     type: kafka
     impl: com.nobu.connect.kafka.KafkaConnector
     config:
-      topic: dlq_kafka
-      bootstrap_server: dlq:5050
+      type: kafka
+      bootstrap.servers: localhost:5052
 
 routes:
   - type: signup

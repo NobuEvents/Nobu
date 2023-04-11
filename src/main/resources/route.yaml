@@ -3,18 +3,17 @@ connections:
     type: kafka
     impl: com.nobu.connect.kafka.KafkaConnector
     config:
-      bootstrap_server: localhost:5050
+      bootstrap.servers: localhost:5050
   zendesk_kafka:
     type: kafka
     impl: com.nobu.connect.kafka.KafkaConnector
     config:
-      bootstrap_server: zendesk:5050
+      bootstrap.servers: localhost:5051
   dlq_kafka:
     type: kafka
     impl: com.nobu.connect.kafka.KafkaConnector
     config:
-      topic: dlq_kafka
-      bootstrap_server: dlq:5050
+      bootstrap.servers: localhost:5052
   segment_main:
     type: segment
     impl: com.nobu.connect.segment.SegmentConnector
@@ -31,24 +30,20 @@ routes:
     target: front_kafka
     config:
       topic: signup_kafka_front
-      key_serialization: org.apache.kafka.common.serialization.StringSerializer
-      value_serialization: org.apache.kafka.common.serialization.ByteArraySerializer
-      ack: 1
-      batch_size: 16384
-      linger_ms: 5
-      buffer_memory: 33554432
-      max_request_size: 1048576
+      acks: 1
+      batch.size: 16384
+      linger.ms: 5
+      buffer.memory: 33554432
+      max.request_size: 1048576
   - type: signup
     target: zendesk_kafka
     config:
       topic: signup_kafka_zendesk
-      key_serialization: org.apache.kafka.common.serialization.StringSerializer
-      value_serialization: org.apache.kafka.common.serialization.ByteArraySerializer
-      ack: 1
-      batch_size: 16384
-      linger_ms: 5
-      buffer_memory: 33554432
-      max_request_size: 1048576
+      acks: 1
+      batch.size: 16384
+      linger.ms: 5
+      buffer.memory: 33554432
+      max.request.size: 1048576
   - type: signup
     target: segment_main
     config:

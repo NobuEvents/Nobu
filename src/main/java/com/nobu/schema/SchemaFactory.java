@@ -42,8 +42,9 @@ public class SchemaFactory {
         private List<String> seeAlso;
         private List<String> subscribers;
         private Map<String, Field> fields;
+
         @JsonProperty("tests")
-        private Test test;
+        private Map<String, Test> test;
 
         public String getType() {
             return type;
@@ -133,11 +134,11 @@ public class SchemaFactory {
             this.fields = fields;
         }
 
-        public Test getTest() {
+        public Map<String, Test> getTest() {
             return test;
         }
 
-        public void setTest(Test test) {
+        public void setTest(Map<String, Test> test) {
             this.test = test;
         }
 
@@ -222,20 +223,6 @@ public class SchemaFactory {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Test {
-      private Map<String, QueryMeta> tests;
-
-      public Map<String, QueryMeta> getTests() {
-        return tests;
-      }
-
-      public void setTests(Map<String, QueryMeta> tests) {
-        this.tests = tests;
-      }
-
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class QueryMeta {
         private String name;
         private String query;
         private String description;

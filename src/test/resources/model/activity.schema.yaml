@@ -54,7 +54,7 @@ schemas:
     type: event
     description: A widget was added
     owner: Growth Team
-    domain: core
+    domain: workflow
     compliance_owner: Legal Team
     channel: https://slack.com/nobu
     email: growth@nobu.com

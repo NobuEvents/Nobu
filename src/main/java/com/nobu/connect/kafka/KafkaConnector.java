@@ -3,65 +3,105 @@ package com.nobu.connect.kafka;
 import com.nobu.connect.Connector;
 import com.nobu.event.NobuEvent;
 import com.nobu.route.RouteFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Future;
+
+
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.jboss.logging.Logger;
 
 import java.util.Map;
 
+import static org.apache.kafka.clients.producer.ProducerConfig.*;
+
 public class KafkaConnector implements Connector {
 
     private static final Logger LOG = Logger.getLogger(KafkaConnector.class);
+    public static final String TOPIC = "topic";
+    public static final String SEND_HEADERS = "send_headers";
+    private static final String CONNECTOR_KEY_SERIALIZER = "org.apache.kafka.common.serialization.StringSerializer";
+    private static final String CONNECTOR_VALUE_SERIALIZER = "org.apache.kafka.common.serialization.ByteArraySerializer";
+
+    private static final String DEFAULT_BATCH_SIZE = "16384";
+    private static final String DEFAULT_LINGER_MS = "5";
+    private static final String DEFAULT_MAX_REQUEST_SIZE = "1048576";
+
 
     private KafkaProducer<String, byte[]> producer;
     private String topic;
+
+    private List<ProducerRecord<String, byte[]>> records;
 
     private boolean sendHeaders = false;
 
     @Override
     public void initialize(String target, RouteFactory.Connection connection, Map<String, String> routeConfig) {
-        Properties properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, connection.getConfig().get("bootstrap_server"));
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-        properties.put(ProducerConfig.ACKS_CONFIG, "all");
-        properties.put(ProducerConfig.BATCH_SIZE_CONFIG, "16384");
-        properties.put(ProducerConfig.LINGER_MS_CONFIG, "5");
-        properties.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, "1048576");
-
-        producer = new KafkaProducer<>(properties);
-        topic = routeConfig.get("topic");
-        sendHeaders = Boolean.parseBoolean(routeConfig.get("send_headers"));
+        producer = newKafkaProducer(connection);
+        topic = routeConfig.get(TOPIC);
+        sendHeaders = Boolean.parseBoolean(routeConfig.get(SEND_HEADERS));
+        records = new ArrayList<>();
     }
 
+    public KafkaProducer<String, byte[]> newKafkaProducer(RouteFactory.Connection connection) {
+        Properties properties = new Properties();
 
+        properties.put(BOOTSTRAP_SERVERS_CONFIG, connection.getConfig().get(BOOTSTRAP_SERVERS_CONFIG));
+        properties.put(KEY_SERIALIZER_CLASS_CONFIG, CONNECTOR_KEY_SERIALIZER);
+        properties.put(VALUE_SERIALIZER_CLASS_CONFIG, CONNECTOR_VALUE_SERIALIZER);
+        properties.put(ACKS_CONFIG, connection.getConfig().getOrDefault(ACKS_CONFIG, "all"));
+        properties.put(BATCH_SIZE_CONFIG, connection.getConfig().getOrDefault(BATCH_SIZE_CONFIG, DEFAULT_BATCH_SIZE));
+        properties.put(LINGER_MS_CONFIG, connection.getConfig().getOrDefault(LINGER_MS_CONFIG, DEFAULT_LINGER_MS));
+        properties.put(MAX_REQUEST_SIZE_CONFIG, connection.getConfig().getOrDefault(MAX_REQUEST_SIZE_CONFIG, DEFAULT_MAX_REQUEST_SIZE));
+        return new KafkaProducer<>(properties);
+    }
+
+    public KafkaProducer<String, byte[]> getProducer() {
+        return producer;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public List<ProducerRecord<String, byte[]>> getRecords() {
+        return records;
+    }
 
     @Override
     public void onEvent(NobuEvent event, long sequence, boolean endOfBatch) throws Exception {
-      List<Future<RecordMetadata>> futures = new ArrayList<>();
 
-      ProducerRecord<String, byte[]> record;
-      if (sendHeaders) {
-        List<Header> headers = new ArrayList<>();
-        headers.add(new RecordHeader("headerKey", "headerValue".getBytes()));
-        record = new ProducerRecord<>(topic, 2, event.getType(), event.getMessage(), headers);
-      } else {
-        record = new ProducerRecord<>(topic, event.getMessage());
-      }
-      futures.add(producer.send(record));
-      producer.flush();
+        publishEvent(event, sequence, endOfBatch, sendHeaders, records, producer);
     }
 
-  @Override
-  public void shutdown() {
-    producer.close();
-  }
+    public void publishEvent(NobuEvent event, long sequence, boolean endOfBatch, boolean sendHeaders,
+                             List<ProducerRecord<String, byte[]>> records,
+                             KafkaProducer<String, byte[]> producer) {
+        ProducerRecord<String, byte[]> record;
+        if (sendHeaders) {
+            List<Header> headers = new ArrayList<>();
+            headers.add(new RecordHeader("headerKey", "headerValue".getBytes()));
+            record = new ProducerRecord<>(getTopic(), 2, event.getType(), event.getMessage(), headers);
+        } else {
+            record = new ProducerRecord<>(getTopic(), event.getMessage());
+        }
+        records.add(record);
+        if (endOfBatch) {
+            records.forEach(producer::send);
+            producer.flush();
+            records.clear();
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        if (producer != null) {
+            producer.flush();
+            producer.close();
+        }
+    }
 }

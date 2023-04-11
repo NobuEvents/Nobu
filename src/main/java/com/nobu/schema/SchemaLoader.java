@@ -62,8 +62,10 @@ public class SchemaLoader {
         }
 
         schemaMap.forEach((k, v) -> {
-            LOG.info("Registering schema " + k);
-            celManager.addScript(k, v.getTest().getDlq());
+            if (v.getTest() != null && v.getTest().get("dlq") != null && v.getTest().get("dlq").getQuery() != null) {
+                LOG.info("Registering CEL script for " + k);
+                celManager.addScript(k, new String[]{v.getTest().get("dlq").getQuery()});
+            }
         });
     }
 

@@ -87,10 +87,5 @@ schemas:
         query: event == 'add_widget' && widget_id > 200
         description: The event is add_widget and the widget_id is greater than 200
         target: dlq_kafka
-      drop:
-        name: widget length and event checker
-        query: event == 'drop_widget'
-      track:
-        name: widget length and event checker
-        query: event == 'modify_widget' && widget_name == 'nobu'
+
 
