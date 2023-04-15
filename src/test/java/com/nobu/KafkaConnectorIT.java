@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 @QuarkusTest
-@Tag("integration")
-public class NobuIntegrationTest {
+@Tag("integration-tests")
+public class KafkaConnectorIT {
 
 
     KafkaContainer kafkaContainer;
