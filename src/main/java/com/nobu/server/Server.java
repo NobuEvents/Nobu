@@ -3,6 +3,7 @@ package com.nobu.server;
 import com.lmax.disruptor.RingBuffer;
 import com.nobu.cel.CelValidator;
 import com.nobu.event.NobuEvent;
+import com.nobu.queue.DisruptorQueue;
 import com.nobu.queue.DisruptorQueueFactory;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.annotations.QuarkusMain;
@@ -29,6 +30,8 @@ public class Server {
     @Inject
     CelValidator celValidator;
 
+    public static final String DLQ_TYPE_NAME = "dlq";
+
     @PostConstruct
     public void init() {
         LOG.info("DisruptorQueue created");
@@ -38,28 +41,35 @@ public class Server {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String event(NobuEvent event) {
-        LOG.info(event);
 
-        if(!celValidator.test(event)) {
-            LOG.error("CEL validation failed");
-            return "error";
-        }
+        DisruptorQueue disruptorQueue = getDisruptorQueueForEvent(event);
 
-        var disruptorQueue = disruptorQueueFactory.get(event.getType());
         if (disruptorQueue == null) {
             LOG.error("No disruptor queue for type " + event.getType());
             return "error";
         }
+
         RingBuffer<NobuEvent> ringBuffer = disruptorQueue.getRingBuffer();
         long sequence = ringBuffer.next();
-        NobuEvent nobuEvent = ringBuffer.get(sequence);
-        nobuEvent.deepCopy(event);
-        // Run data quality checks
-
-
-        ringBuffer.publish(sequence);
+        try {
+            NobuEvent nobuEvent = ringBuffer.get(sequence);
+            nobuEvent.deepCopy(event);
+        } finally {
+            ringBuffer.publish(sequence);
+        }
         return "ok";
     }
+
+    private DisruptorQueue getDisruptorQueueForEvent(NobuEvent event) {
+        if (!celValidator.test(event)) {
+            LOG.warn("CEL validation failed for event type " + event.getType() +
+                    " and event schema " + event.getSchema());
+            return disruptorQueueFactory.get(DLQ_TYPE_NAME);
+        } else {
+            return disruptorQueueFactory.get(event.getType());
+        }
+    }
+
 
     public static void main(String... args) {
         LOG.info("Running main method");

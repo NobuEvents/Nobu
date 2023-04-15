@@ -25,6 +25,8 @@ public class ServerTest {
 
         NobuEvent event = new NobuEvent();
         event.setType("signup");
+        event.setSchema("signup");
+
         event.setMessage(message);
         event.setTimestamp(1L);
 
