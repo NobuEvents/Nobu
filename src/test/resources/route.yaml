@@ -8,7 +8,7 @@ connections:
       batch.size: 16384
       linger.ms: 5
       max.request.size: 1000
-  zendesk_kafka:
+  backup_kafka:
     type: kafka
     impl: com.nobu.connect.kafka.KafkaConnector
     config:
@@ -44,9 +44,9 @@ routes:
     config:
       topic: signup_kafka_front
   - type: login
-    target: zendesk_kafka
+    target: backup_kafka
     config:
-      topic: signup_kafka_zendesk
+      topic: signup_kafka_backup
   - type: segment
     target: segment_main
     config:

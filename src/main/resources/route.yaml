@@ -4,7 +4,7 @@ connections:
     impl: com.nobu.connect.kafka.KafkaConnector
     config:
       bootstrap.servers: localhost:5050
-  zendesk_kafka:
+  backup_kafka:
     type: kafka
     impl: com.nobu.connect.kafka.KafkaConnector
     config:
@@ -46,9 +46,9 @@ routes:
       buffer.memory: 33554432
       max.request_size: 1048576
   - type: signup
-    target: zendesk_kafka
+    target: backup_kafka
     config:
-      topic: signup_kafka_zendesk
+      topic: signup_kafka_backup
       acks: 1
       batch.size: 16384
       linger.ms: 5
