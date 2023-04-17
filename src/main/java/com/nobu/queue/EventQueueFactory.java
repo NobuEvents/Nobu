@@ -12,9 +12,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 @Singleton
-public class DisruptorQueueFactory {
+public class EventQueueFactory {
 
-    private ConcurrentHashMap<String, DisruptorQueue> queueMap;
+    private ConcurrentHashMap<String, EventQueue> queueMap;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
@@ -25,7 +25,7 @@ public class DisruptorQueueFactory {
     }
 
 
-    public void put(String type, DisruptorQueue queue) {
+    public void put(String type, EventQueue queue) {
         writeLock.lock();
         try {
             queueMap.put(type, queue);
@@ -35,7 +35,7 @@ public class DisruptorQueueFactory {
     }
 
     @Nullable
-    public DisruptorQueue get(String type) {
+    public EventQueue get(String type) {
         readLock.lock();
         try {
             return queueMap.get(type);
@@ -47,7 +47,7 @@ public class DisruptorQueueFactory {
     public void start() {
         writeLock.lock();
         try {
-            queueMap.values().forEach(DisruptorQueue::start);
+            queueMap.values().forEach(EventQueue::start);
         } finally {
             writeLock.unlock();
         }

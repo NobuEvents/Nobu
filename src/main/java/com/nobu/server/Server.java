@@ -3,8 +3,8 @@ package com.nobu.server;
 import com.lmax.disruptor.RingBuffer;
 import com.nobu.cel.CelValidator;
 import com.nobu.event.NobuEvent;
-import com.nobu.queue.DisruptorQueue;
-import com.nobu.queue.DisruptorQueueFactory;
+import com.nobu.queue.EventQueue;
+import com.nobu.queue.EventQueueFactory;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.annotations.QuarkusMain;
 import org.jboss.logging.Logger;
@@ -25,7 +25,7 @@ public class Server {
     private static final Logger LOG = Logger.getLogger(Server.class);
 
     @Inject
-    DisruptorQueueFactory disruptorQueueFactory;
+    EventQueueFactory eventQueueFactory;
 
     @Inject
     CelValidator celValidator;
@@ -34,7 +34,7 @@ public class Server {
 
     @PostConstruct
     public void init() {
-        LOG.info("DisruptorQueue created");
+        LOG.info("EventQueue created");
     }
 
     @POST
@@ -42,14 +42,14 @@ public class Server {
     @Produces(MediaType.APPLICATION_JSON)
     public String event(NobuEvent event) {
 
-        DisruptorQueue disruptorQueue = getDisruptorQueueForEvent(event);
+        EventQueue eventQueue = getEventQueue(event);
 
-        if (disruptorQueue == null) {
-            LOG.error("No disruptor queue for type " + event.getType());
+        if (eventQueue == null) {
+            LOG.error("No EventQueue queue for type " + event.getType());
             return "error";
         }
 
-        RingBuffer<NobuEvent> ringBuffer = disruptorQueue.getRingBuffer();
+        RingBuffer<NobuEvent> ringBuffer = eventQueue.getRingBuffer();
         long sequence = ringBuffer.next();
         try {
             NobuEvent nobuEvent = ringBuffer.get(sequence);
@@ -60,13 +60,13 @@ public class Server {
         return "ok";
     }
 
-    private DisruptorQueue getDisruptorQueueForEvent(NobuEvent event) {
+    private EventQueue getEventQueue(NobuEvent event) {
         if (!celValidator.test(event)) {
             LOG.warn("CEL validation failed for event type " + event.getType() +
                     " and event schema " + event.getSchema());
-            return disruptorQueueFactory.get(DLQ_TYPE_NAME);
+            return eventQueueFactory.get(DLQ_TYPE_NAME);
         } else {
-            return disruptorQueueFactory.get(event.getType());
+            return eventQueueFactory.get(event.getType());
         }
     }
 

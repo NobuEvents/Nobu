@@ -15,13 +15,13 @@ import java.util.concurrent.ThreadFactory;
  * LMax Disruptor Broadcasting Queue implementation for dynamic event publishing
  * See: <a href="https://github.com/lmax-io/disruptor/blob/master">LMax Disruptor</a>
  */
-public class DisruptorQueue {
+public class EventQueue {
 
   private final Disruptor<NobuEvent> eventDisruptor;
   private final List<EventHandler<NobuEvent>> eventHandlerList;
   private static final int DEFAULT_BUFFER_SIZE = 1024;
 
-  public DisruptorQueue(String name) {
+  public EventQueue(String name) {
     this.eventDisruptor = new Disruptor<>(NobuEvent::new, DEFAULT_BUFFER_SIZE, getThreadFactory(name));
     this.eventHandlerList = new ArrayList<>();
     Log.info("Disruptor Initialized for the type:" + name);
