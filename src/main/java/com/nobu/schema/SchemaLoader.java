@@ -16,6 +16,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -63,11 +64,25 @@ public class SchemaLoader {
         }
 
         schemaMap.forEach((k, v) -> {
-            if (v.getValidators() != null && v.getValidators().get("dlq") != null && v.getValidators().get("dlq").getQuery() != null) {
+            var dlq = getDlq(v.getValidators());
+            if (dlq.isPresent() && dlq.get().getQuery() != null) {
                 LOG.info("Registering CEL script for " + k);
-                celManager.addScript(k, new String[]{v.getValidators().get("dlq").getQuery()});
+                celManager.addScript(k, new String[]{dlq.get().getQuery()});
             }
         });
+    }
+
+    /**
+     * Null safe method to get the dlq validator.
+     *
+     * @param validators The map of validators.
+     * @return The dlq validator.
+     */
+    private Optional<SchemaFactory.Validator> getDlq(Map<String, SchemaFactory.Validator> validators) {
+        if (validators == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(validators.get("dlq"));
     }
 
     public CelManager getCelManager() {
