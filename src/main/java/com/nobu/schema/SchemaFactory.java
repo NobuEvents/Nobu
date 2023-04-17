@@ -25,7 +25,6 @@ public class SchemaFactory {
         this.schemaMap = schemaMap;
     }
 
-
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Schema {
 
@@ -42,8 +41,9 @@ public class SchemaFactory {
         private List<String> seeAlso;
         private List<String> subscribers;
         private Map<String, Field> fields;
-        @JsonProperty("tests")
-        private Test test;
+
+        @JsonProperty("validators")
+        private Map<String, Validator> validators;
 
         public String getType() {
             return type;
@@ -133,12 +133,12 @@ public class SchemaFactory {
             this.fields = fields;
         }
 
-        public Test getTest() {
-            return test;
+        public Map<String, Validator> getValidators() {
+            return validators;
         }
 
-        public void setTest(Test test) {
-            this.test = test;
+        public void setValidators(Map<String, Validator> validators) {
+            this.validators = validators;
         }
 
 
@@ -221,18 +221,43 @@ public class SchemaFactory {
 
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Test {
+    public static class Validator {
+        private String name;
+        private String query;
+        private String description;
+        private String target;
 
-        private String[] dlq;
-
-        public String[] getDlq() {
-            return dlq;
+        public String getName() {
+            return name;
         }
 
-        public void setDlq(String[] value) {
-            this.dlq = value;
+        public void setName(String name) {
+            this.name = name;
         }
 
+        public String getQuery() {
+            return query;
+        }
+
+        public void setQuery(String query) {
+            this.query = query;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public String getTarget() {
+            return target;
+        }
+
+        public void setTarget(String target) {
+            this.target = target;
+        }
     }
 
     @Override

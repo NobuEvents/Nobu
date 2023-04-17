@@ -16,12 +16,13 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-/***
- * Load the schema files from the schema directory
- * The schema files are loaded into a map
- * The map key is the schema name and the value is the schema object
+/**
+ * Load the schema files from the schema directory.
+ * The schema files are loaded into a map.
+ * The map key is the schema name and the value is the schema object.
  */
 @Startup
 @ApplicationScoped
@@ -36,7 +37,7 @@ public class SchemaLoader {
     private final Map<String, SchemaFactory.Schema> schemaMap = new ConcurrentHashMap<>();
 
     /***
-     * Read the schema files recursively
+     * Read the schema files recursively from the schema directory
      * config: path -  The path to the directory where the schema files are located
      * config: ext - The file extension of the schema files
      */
@@ -51,9 +52,10 @@ public class SchemaLoader {
         buildCelScript(schemaDir);
     }
 
-    /***
-     * Build the CEL script for each schema
-     * @param schemaDir The directory where the schema files are located
+    /**
+     * Build the CEL script for each schema.
+     *
+     * @param schemaDir The directory where the schema files are located.
      */
     private void buildCelScript(String schemaDir) {
         if (schemaMap.isEmpty()) {
@@ -62,18 +64,35 @@ public class SchemaLoader {
         }
 
         schemaMap.forEach((k, v) -> {
-            LOG.info("Registering schema " + k);
-            celManager.addScript(k, v.getTest().getDlq());
+            var dlq = getDlq(v.getValidators());
+            if (dlq.isPresent() && dlq.get().getQuery() != null) {
+                LOG.info("Registering CEL script for " + k);
+                celManager.addScript(k, new String[]{dlq.get().getQuery()});
+            }
         });
+    }
+
+    /**
+     * Null safe method to get the dlq validator.
+     *
+     * @param validators The map of validators.
+     * @return The dlq validator.
+     */
+    private Optional<SchemaFactory.Validator> getDlq(Map<String, SchemaFactory.Validator> validators) {
+        if (validators == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(validators.get("dlq"));
     }
 
     public CelManager getCelManager() {
         return celManager;
     }
 
-    /***
-     * Get the schema map
-     * @return Map of schema names and schema objects
+    /**
+     * Get the schema map.
+     *
+     * @return Map of schema names and schema objects.
      */
     public Map<String, SchemaFactory.Schema> getSchemaMap() {
         return schemaMap;

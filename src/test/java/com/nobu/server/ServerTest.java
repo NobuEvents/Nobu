@@ -19,12 +19,18 @@ public class ServerTest {
         byte[] message = """
                 {
                  "event":"signup",
-                 "client":"yahoo.com"
+                 "client":"yahoo.com",
+                 "phone_number": 1234567890,
+                 "user": {
+                    "phone": 100
+                 }
                 }
                 """.getBytes();
 
         NobuEvent event = new NobuEvent();
         event.setType("signup");
+        event.setSchema("signup");
+
         event.setMessage(message);
         event.setTimestamp(1L);
 

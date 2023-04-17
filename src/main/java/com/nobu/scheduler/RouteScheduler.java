@@ -3,8 +3,8 @@ package com.nobu.scheduler;
 
 import com.nobu.connect.Connector;
 import com.nobu.connect.ConnectorFactory;
-import com.nobu.queue.DisruptorQueue;
-import com.nobu.queue.DisruptorQueueFactory;
+import com.nobu.queue.EventQueue;
+import com.nobu.queue.EventQueueFactory;
 import com.nobu.route.RouteFactory;
 import io.quarkus.runtime.Startup;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -28,7 +28,7 @@ public class RouteScheduler {
     private RouteFactory routeFactory;
 
     @Inject
-    DisruptorQueueFactory disruptorQueueFactory;
+    EventQueueFactory eventQueueFactory;
 
     @Inject
     ConnectorFactory connectorFactory;
@@ -39,34 +39,34 @@ public class RouteScheduler {
         var configFile = ConfigProvider.getConfig().getValue("router.config", String.class);
         routeFactory = RouteFactory.get(configFile);
         routeFactory.validateRouteConfig();
-        startDisruptor(routeFactory);
+        startEventQueue(routeFactory);
     }
 
     @PreDestroy
     public void terminate() {
         LOG.info("Terminating Route Scheduler");
-        disruptorQueueFactory.terminate();
+        eventQueueFactory.terminate();
     }
 
     /***
-     * Initialize the disruptor queue and register the connection handlers
+     * Initialize the Event queue and register the connection handlers
      * If the queue is not found in the factory, create a new queue and register it
-     * Register one disruptor queue per route type; one type can have multiple routes
+     * Register one Event queue per route type; one type can have multiple routes
      * @param routeFactory RouteFactory configuration file
      */
-    private void startDisruptor(RouteFactory routeFactory) {
+    private void startEventQueue(RouteFactory routeFactory) {
         for (var route : routeFactory.getRoutes()) {
-            if (disruptorQueueFactory.get(route.getType()) == null) {
-                var queue = new DisruptorQueue(route.getType());
-                disruptorQueueFactory.put(route.getType(), queue);
+            if (eventQueueFactory.get(route.getType()) == null) {
+                var queue = new EventQueue(route.getType());
+                eventQueueFactory.put(route.getType(), queue);
             }
 
             LOG.info("Registering Connection Handler: " + getConnector(route, routeFactory.getConnectionMap()));
-            Objects.requireNonNull(disruptorQueueFactory.get(route.getType()))
+            Objects.requireNonNull(eventQueueFactory.get(route.getType()))
                     .addHandle(getConnector(route, routeFactory.getConnectionMap()));
         }
-        disruptorQueueFactory.start();
-        LOG.info("Disruptor started");
+        eventQueueFactory.start();
+        LOG.info("Event Queue started");
     }
 
     private Connector getConnector(RouteFactory.Route route, Map<String, RouteFactory.Connection> connectionMap) {
