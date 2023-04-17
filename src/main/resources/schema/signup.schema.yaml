@@ -43,7 +43,7 @@ schemas:
         type: string
         description: The ip_address of the user
         is_pii: true
-    tests:
+    validators:
       dlq:
         name: signup length and event checker
         description: The event is signup and the phone number is greater than 200
@@ -81,7 +81,7 @@ schemas:
       widget_timestamp:
         type: timestamp
         description: The timestamp of the widget
-    tests:
+    validators:
       dlq:
         name: widget length and event checker
         query: event == 'add_widget' && widget_id > 200

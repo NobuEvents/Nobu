@@ -102,57 +102,57 @@
             <version>${commons.lang.version}</version>
         </dependency>
 
-        <!-- Test Dependencies -->
+        <!-- Validator Dependencies -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
-            <scope>test</scope>
+            <scope>validator</scope>
         </dependency>
 
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
+            <scope>validator</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>${mockito.version}</version>
-            <scope>test</scope>
+            <scope>validator</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <version>${testcontainers.version}</version>
-            <scope>test</scope>
+            <scope>validator</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${testcontainers.version}</version>
-            <scope>test</scope>
+            <scope>validator</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
             <version>${testcontainers.version}</version>
-            <scope>test</scope>
+            <scope>validator</scope>
         </dependency>
 
         <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java</artifactId>
             <version>3.3.0</version>
-            <scope>test</scope>
+            <scope>validator</scope>
         </dependency>
 
         <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java-core</artifactId>
             <version>3.3.0</version>
-            <scope>test</scope>
+            <scope>validator</scope>
         </dependency>
 
     </dependencies>
@@ -225,7 +225,7 @@
                         <executions>
                             <execution>
                                 <goals>
-                                    <goal>integration-test</goal>
+                                    <goal>integration-validator</goal>
                                     <goal>verify</goal>
                                 </goals>
                                 <configuration>

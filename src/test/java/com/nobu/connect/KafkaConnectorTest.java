@@ -88,13 +88,13 @@ public class KafkaConnectorTest {
         when(connector.getProducer()).thenReturn(producer);
         when(connector.getTopic()).thenReturn("my-topic");
 
-        // Step 3: Mock the KafkaConnector.publishEvent() method
-        doCallRealMethod().when(connector).publishEvent(
-                any(NobuEvent.class), anyLong(), anyBoolean(),
-                anyBoolean(), any(List.class), any(KafkaProducer.class));
+        // Step 3: Mock the KafkaConnector.onEvent() method
+
+        doCallRealMethod().when(connector).onEvent(any(NobuEvent.class), anyLong(), anyBoolean());
 
         // Step 4: initialize the record variable to test the publishEvent() method
         List<ProducerRecord<String, byte[]>> records = new ArrayList<>();
+        when(connector.getRecords()).thenReturn(records);
 
         NobuEvent event1 = new NobuEvent();
         event1.setType("type1");
@@ -104,12 +104,12 @@ public class KafkaConnectorTest {
         event2.setMessage("message2".getBytes());
 
         // Publish a couple of message with endOfBatch=false
-        connector.publishEvent(event1, 0, false, false, records, producer);
-        connector.publishEvent(event2, 0, false, false, records, producer);
+        connector.onEvent(event1, 0, false);
+        connector.onEvent(event2, 0, false);
         assertEquals(2, records.size());
 
         // Publish a couple of message with endOfBatch=true. It should flush the records into Kafka
-        connector.publishEvent(event1, 1, true, false, records, producer);
+        connector.onEvent(event1, 0, true);
         assertEquals(0, records.size());
 
     }

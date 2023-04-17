@@ -21,8 +21,8 @@ public class SchemaFactoryTest {
         assertEquals("entity", signupSchema.getType());
         assertEquals("core", signupSchema.getDomain());
 
-        SchemaFactory.Test test = signupSchema.getTest().get("dlq");
-        assertEquals("event == 'signup' && phone_number > 200 && user.phone > 2", test.getQuery());
+        SchemaFactory.Validator validator = signupSchema.getValidators().get("dlq");
+        assertEquals("event == 'signup' && phone_number > 200 && user.phone > 2", validator.getQuery());
 
         var fields = signupSchema.getFields();
         assertEquals("long", fields.get("account_id").getType());

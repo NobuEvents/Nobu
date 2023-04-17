@@ -13,7 +13,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
-import org.jboss.logging.Logger;
+
 
 import java.util.Map;
 
@@ -21,7 +21,6 @@ import static org.apache.kafka.clients.producer.ProducerConfig.*;
 
 public class KafkaConnector implements Connector {
 
-    private static final Logger LOG = Logger.getLogger(KafkaConnector.class);
     public static final String TOPIC = "topic";
     public static final String SEND_HEADERS = "send_headers";
     private static final String CONNECTOR_KEY_SERIALIZER = "org.apache.kafka.common.serialization.StringSerializer";
@@ -75,17 +74,22 @@ public class KafkaConnector implements Connector {
     @Override
     public void onEvent(NobuEvent event, long sequence, boolean endOfBatch) throws Exception {
 
-        publishEvent(event, sequence, endOfBatch, sendHeaders, records, producer);
+        publishEvent(event, sequence, endOfBatch, sendHeaders, getRecords(), getProducer());
     }
 
-    public void publishEvent(NobuEvent event, long sequence, boolean endOfBatch, boolean sendHeaders,
-                             List<ProducerRecord<String, byte[]>> records,
-                             KafkaProducer<String, byte[]> producer) {
+    private void publishEvent(NobuEvent event, long sequence, boolean endOfBatch, boolean sendHeaders,
+                              List<ProducerRecord<String, byte[]>> records,
+                              KafkaProducer<String, byte[]> producer) {
         ProducerRecord<String, byte[]> record;
         if (sendHeaders) {
             List<Header> headers = new ArrayList<>();
-            headers.add(new RecordHeader("headerKey", "headerValue".getBytes()));
-            record = new ProducerRecord<>(getTopic(), 2, event.getType(), event.getMessage(), headers);
+            headers.add(new RecordHeader("type", event.getType().getBytes()));
+            headers.add(new RecordHeader("schema", event.getSchema().getBytes()));
+            headers.add(new RecordHeader("timestamp", event.getTimestamp().toString().getBytes()));
+            headers.add(new RecordHeader("host", event.getHost().getBytes()));
+            headers.add(new RecordHeader("offset", event.getOffset().toString().getBytes()));
+            headers.add(new RecordHeader("sequence", String.valueOf(sequence).getBytes()));
+            record = new ProducerRecord<>(getTopic(), null, event.getType(), event.getMessage(), headers);
         } else {
             record = new ProducerRecord<>(getTopic(), event.getMessage());
         }

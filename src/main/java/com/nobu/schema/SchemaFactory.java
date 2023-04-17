@@ -25,7 +25,6 @@ public class SchemaFactory {
         this.schemaMap = schemaMap;
     }
 
-
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Schema {
 
@@ -43,8 +42,8 @@ public class SchemaFactory {
         private List<String> subscribers;
         private Map<String, Field> fields;
 
-        @JsonProperty("tests")
-        private Map<String, Test> test;
+        @JsonProperty("validators")
+        private Map<String, Validator> validators;
 
         public String getType() {
             return type;
@@ -134,12 +133,12 @@ public class SchemaFactory {
             this.fields = fields;
         }
 
-        public Map<String, Test> getTest() {
-            return test;
+        public Map<String, Validator> getValidators() {
+            return validators;
         }
 
-        public void setTest(Map<String, Test> test) {
-            this.test = test;
+        public void setValidators(Map<String, Validator> validators) {
+            this.validators = validators;
         }
 
 
@@ -222,7 +221,7 @@ public class SchemaFactory {
 
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Test {
+    public static class Validator {
         private String name;
         private String query;
         private String description;
