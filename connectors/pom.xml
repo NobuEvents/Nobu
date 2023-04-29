@@ -7,15 +7,28 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>connectors</artifactId>
-  <name>Archetype - connectors</name>
-  <url>http://maven.apache.org</url>
-  <dependencies>
+  <version>${project.parent.version}</version>
+  <packaging>pom</packaging>
+  <name>Connectors</name>
+  <description>Parent Module for List of Connectors</description>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.nobustream</groupId>
+        <artifactId>spec</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
 
-    <dependency>
-      <groupId>com.nobustream</groupId>
-      <artifactId>spec</artifactId>
-      <version>${parent.version}</version>
-    </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-junit5</artifactId>
+        <scope>test</scope>
+      </dependency>
 
-  </dependencies>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-kafka-client</artifactId>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 </project>

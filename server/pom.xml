@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>server</artifactId>
-  <version>${parent.version}</version>
+  <version>${project.parent.version}</version>
 
   <name>Server</name>
 
@@ -16,7 +16,7 @@
     <dependency>
       <groupId>com.nobustream</groupId>
       <artifactId>spec</artifactId>
-      <version>${parent.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -42,13 +42,11 @@
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-yaml</artifactId>
-      <version>${jackson.yaml.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.lmax</groupId>
       <artifactId>disruptor</artifactId>
-      <version>${lmax.disruptor.version}</version>
     </dependency>
 
     <dependency>
@@ -69,47 +67,54 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>${commons.lang.version}</version>
     </dependency>
 
     <!-- Validator Dependencies -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>kafka</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.github.docker-java</groupId>
       <artifactId>docker-java</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.github.docker-java</groupId>
       <artifactId>docker-java-core</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -158,6 +163,7 @@
           <!--<argLine>&#45;&#45;enable-preview</argLine>-->
         </configuration>
       </plugin>
+
     </plugins>
   </build>
   <profiles>
