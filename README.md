@@ -5,7 +5,7 @@ https://docs.google.com/document/d/1_X0KivR3lzac6TgR_VBwSW5Q0ikWU-1VZOCidAC2_50/
 
 # Required Software
 
-1. JDK 1.9
+1. JDK 1.7
 2. Maven
 
 # How to build
