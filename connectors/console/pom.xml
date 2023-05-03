@@ -7,10 +7,10 @@
     <groupId>com.nobustream</groupId>
     <artifactId>nobu</artifactId>
     <version>1.0</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>spec</artifactId>
-  <version>${project.parent.version}</version>
+  <artifactId>console</artifactId>
 
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
@@ -20,8 +20,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.lmax</groupId>
-      <artifactId>disruptor</artifactId>
+      <groupId>com.nobustream</groupId>
+      <artifactId>spec</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
 

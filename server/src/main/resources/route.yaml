@@ -1,17 +1,21 @@
 connections:
   front_kafka:
     type: kafka
-    impl: com.nobu.connect.kafka.KafkaConnector
+    impl: com.nobu.connect.logger.LoggerConnector
     config:
       bootstrap.servers: localhost:5050
+      acks: 1
+      batch.size: 16384
+      linger.ms: 5
+      max.request.size: 1000
   backup_kafka:
     type: kafka
-    impl: com.nobu.connect.kafka.KafkaConnector
+    impl: com.nobu.connect.logger.LoggerConnector
     config:
       bootstrap.servers: localhost:5051
   segment_main:
     type: segment
-    impl: com.nobu.connect.segment.SegmentConnector
+    impl: com.nobu.connect.console.ConsoleConnector
     config:
       url: https://nobu.segment.com/webhook
   console_main:
@@ -19,6 +23,12 @@ connections:
     impl: com.nobu.connect.console.ConsoleConnector
     config:
       url: https://nobu.segment.com/webhook
+  dlq_kafka:
+    type: kafka
+    impl: com.nobu.connect.logger.LoggerConnector
+    config:
+      type: kafka
+      bootstrap.servers: localhost:5052
 
 routes:
   # dlq is a special reserved route name.
@@ -28,38 +38,20 @@ routes:
   - type: dlq
     target: front_kafka
     config:
-      url: https://nobu.segment.com/webhook
-      config:
-        topic: dlq_topic
-        acks: 1
-        batch.size: 16384
-        linger.ms: 5
-        buffer.memory: 33554432
-        max.request_size: 1048576
+      topic: dlq_topic
   - type: signup
     target: front_kafka
     config:
       topic: signup_kafka_front
-      acks: 1
-      batch.size: 16384
-      linger.ms: 5
-      buffer.memory: 33554432
-      max.request_size: 1048576
-  - type: signup
+  - type: login
     target: backup_kafka
     config:
       topic: signup_kafka_backup
-      acks: 1
-      batch.size: 16384
-      linger.ms: 5
-      buffer.memory: 33554432
-      max.request.size: 1048576
-  - type: signup
+  - type: segment
     target: segment_main
     config:
       url: https://nobu.segment.com/webhook
-  - type: purchase
+  - type: signup
     target: console_main
     config:
       url: https://nobu.segment.com/webhook
-
