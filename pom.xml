@@ -12,6 +12,7 @@
     <module>connectors</module>
     <module>connectors/kafka</module>
     <module>spec</module>
+    <module>connectors/console</module>
   </modules>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
@@ -126,6 +127,19 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${compiler-plugin.version}</version>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <target>${maven.compiler.target}</target>
+            <!--<compilerArgs>
+                <arg>-parameters</arg>
+                <arg>&#45;&#45;add-modules=jdk.incubator.concurrent</arg>
+                <arg>&#45;&#45;enable-preview</arg>
+            </compilerArgs>-->
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>${quarkus.platform.group-id}</groupId>
           <artifactId>quarkus-maven-plugin</artifactId>
           <version>${quarkus.platform.version}</version>
@@ -139,19 +153,6 @@
               </goals>
             </execution>
           </executions>
-        </plugin>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>${compiler-plugin.version}</version>
-          <configuration>
-            <source>${maven.compiler.source}</source>
-            <target>${maven.compiler.target}</target>
-            <!--<compilerArgs>
-                <arg>-parameters</arg>
-                <arg>&#45;&#45;add-modules=jdk.incubator.concurrent</arg>
-                <arg>&#45;&#45;enable-preview</arg>
-            </compilerArgs>-->
-          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
