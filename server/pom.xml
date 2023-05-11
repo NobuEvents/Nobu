@@ -18,6 +18,35 @@
       <artifactId>spec</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
+
+    <!-- Start of Nobu Connection Dependencies -->
+
+    <dependency>
+      <groupId>com.nobustream</groupId>
+      <artifactId>kafka</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.nobustream</groupId>
+      <artifactId>console</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.nobustream</groupId>
+      <artifactId>pubsub</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.nobustream</groupId>
+      <artifactId>logger</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+
+    <!-- End of Nobu Connection Dependencies -->
+
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-reactive-jackson</artifactId>

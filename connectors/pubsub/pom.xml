@@ -11,6 +11,9 @@
   </parent>
 
   <artifactId>pubsub</artifactId>
+  <packaging>jar</packaging>
+  <version>${project.parent.version}</version>
+  <name>Google PubSub Connector</name>
 
   <properties>
     <maven.compiler.source>17</maven.compiler.source>

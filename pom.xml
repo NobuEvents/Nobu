@@ -14,6 +14,7 @@
     <module>spec</module>
     <module>connectors/console</module>
     <module>connectors/pubsub</module>
+      <module>connectors/logger</module>
   </modules>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
@@ -34,6 +35,10 @@
     <docker.java>3.3.0</docker.java>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
+
+    <shadeSources>true</shadeSources>
+    <maven-shade-plugin.version>3.4.1</maven-shade-plugin.version>
+
   </properties>
 
   <dependencyManagement>

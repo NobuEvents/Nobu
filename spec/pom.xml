@@ -10,7 +10,9 @@
   </parent>
 
   <artifactId>spec</artifactId>
+  <packaging>jar</packaging>
   <version>${project.parent.version}</version>
+  <name>Spec</name>
 
   <properties>
     <maven.compiler.source>17</maven.compiler.source>

@@ -1,7 +1,7 @@
 connections:
   front_kafka:
     type: kafka
-    impl: com.nobu.connect.logger.LoggerConnector
+    impl: com.nobu.connector.logger.LoggerConnector
     config:
       bootstrap.servers: localhost:5050
       acks: 1
@@ -10,7 +10,7 @@ connections:
       max.request.size: 1000
   backup_kafka:
     type: kafka
-    impl: com.nobu.connect.logger.LoggerConnector
+    impl: com.nobu.connector.logger.LoggerConnector
     config:
       bootstrap.servers: localhost:5051
   segment_main:
@@ -25,7 +25,7 @@ connections:
       url: https://nobu.segment.com/webhook
   dlq_kafka:
     type: kafka
-    impl: com.nobu.connect.logger.LoggerConnector
+    impl: com.nobu.connector.logger.LoggerConnector
     config:
       type: kafka
       bootstrap.servers: localhost:5052
