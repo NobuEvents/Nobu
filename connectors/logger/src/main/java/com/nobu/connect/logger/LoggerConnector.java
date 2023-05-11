@@ -1,4 +1,4 @@
-package com.nobu.connector.logger;
+package com.nobu.connect.logger;
 
 import com.nobu.connect.Connector;
 import com.nobu.connect.Context;
