@@ -3,8 +3,6 @@ package com.nobu.connect.console;
 import com.nobu.connect.Connector;
 import com.nobu.connect.Context;
 import com.nobu.event.NobuEvent;
-import com.nobu.route.RouteFactory;
-import java.util.Map;
 
 
 public class ConsoleConnector implements Connector {

@@ -1,6 +1,7 @@
 package com.nobu.config;
 
-import com.nobu.exception.RouteConfigException;
+
+import com.nobu.exception.SchemaConfigException;
 import org.jboss.logging.Logger;
 
 import java.io.File;
@@ -16,7 +17,7 @@ public class SchemaDirReader {
                 .apply(path)
                 .or(() -> new ResourceSchemaDirectoryReader().apply(path))
                 .or(() -> new URLSchemaDirectoryReader().apply(path))
-                .orElseThrow(() -> new RouteConfigException("Invalid config file path"));
+                .orElseThrow(() -> new SchemaConfigException("Invalid config file path: " + path ));
     }
 
     public static class DirectSchemaDirectoryReader implements Function<String, Optional<Path>> {

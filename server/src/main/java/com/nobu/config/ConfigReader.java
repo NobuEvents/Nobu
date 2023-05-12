@@ -15,7 +15,7 @@ public class ConfigReader {
                 .apply(path)
                 .or(() -> new ResourceConfigReader().apply(path))
                 .or(() -> new URLConfigReader().apply(path))
-                .orElseThrow(() -> new RouteConfigException("Invalid config file path"));
+                .orElseThrow(() -> new RouteConfigException("Invalid config file path" + path));
     }
 
     public static class FileConfigReader implements Function<String, Optional<File>> {

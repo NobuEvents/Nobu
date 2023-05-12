@@ -37,6 +37,7 @@ public class RouteScheduler {
   public void initialize() {
     LOG.info("Initializing Route Scheduler");
     var configFile = ConfigProvider.getConfig().getValue("router.config", String.class);
+    LOG.info("Config file: " + configFile);
     routeFactory = RouteFactory.get(configFile);
     routeFactory.validateRouteConfig();
     startEventQueue(routeFactory);
