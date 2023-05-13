@@ -2,7 +2,7 @@ package com.nobu.cel;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import com.nobu.schema.SchemaLoader;
 import org.jboss.logging.Logger;
 import org.projectnessie.cel.tools.ScriptException;

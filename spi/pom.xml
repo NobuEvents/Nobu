@@ -7,13 +7,12 @@
     <groupId>com.nobustream</groupId>
     <artifactId>nobu</artifactId>
     <version>1.0</version>
-    <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>console</artifactId>
+  <artifactId>spi</artifactId>
   <packaging>jar</packaging>
   <version>${project.parent.version}</version>
-  <name>Simple Console Connector</name>
+  <name>Spec</name>
 
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
@@ -23,9 +22,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.nobustream</groupId>
-      <artifactId>spi</artifactId>
-      <version>${project.parent.version}</version>
+      <groupId>com.lmax</groupId>
+      <artifactId>disruptor</artifactId>
     </dependency>
   </dependencies>
 

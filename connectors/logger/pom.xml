@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>com.nobustream</groupId>
-            <artifactId>spec</artifactId>
+            <artifactId>spi</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
