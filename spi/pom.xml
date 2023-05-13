@@ -9,7 +9,7 @@
     <version>1.0</version>
   </parent>
 
-  <artifactId>spec</artifactId>
+  <artifactId>spi</artifactId>
   <packaging>jar</packaging>
   <version>${project.parent.version}</version>
   <name>Spec</name>
