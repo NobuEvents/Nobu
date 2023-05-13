@@ -1,7 +1,7 @@
 package com.nobu.spi.connect.kafka;
 
 import com.nobu.spi.connect.Context;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;

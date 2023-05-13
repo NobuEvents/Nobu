@@ -1,7 +1,7 @@
 package com.nobu.cel;
 
 
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 

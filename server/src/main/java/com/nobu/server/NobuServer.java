@@ -2,7 +2,7 @@ package com.nobu.server;
 
 import com.lmax.disruptor.RingBuffer;
 import com.nobu.cel.CelValidator;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import com.nobu.queue.EventQueue;
 import com.nobu.queue.EventQueueFactory;
 import io.quarkus.runtime.Quarkus;

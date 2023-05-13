@@ -2,7 +2,7 @@ package com.nobu.spi.connect.console;
 
 import com.nobu.spi.connect.Connector;
 import com.nobu.spi.connect.Context;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 
 
 public class ConsoleConnector implements Connector {

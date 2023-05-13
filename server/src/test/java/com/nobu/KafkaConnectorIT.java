@@ -1,6 +1,6 @@
 package com.nobu;
 
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import com.nobu.scheduler.RouteScheduler;
 import io.quarkus.test.junit.QuarkusTest;
 import org.jetbrains.annotations.NotNull;

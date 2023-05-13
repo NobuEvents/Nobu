@@ -2,7 +2,7 @@ package com.nobu.spi.connect.kafka;
 
 import com.nobu.spi.connect.Connector;
 import com.nobu.spi.connect.Context;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;

@@ -4,7 +4,7 @@ import com.google.cloud.pubsub.v1.Publisher;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.nobu.spi.connect.Context;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.BeforeEach;

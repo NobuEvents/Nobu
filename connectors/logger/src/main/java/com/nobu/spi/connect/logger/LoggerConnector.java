@@ -2,7 +2,7 @@ package com.nobu.spi.connect.logger;
 
 import com.nobu.spi.connect.Connector;
 import com.nobu.spi.connect.Context;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import org.jboss.logging.Logger;
 
 public class LoggerConnector implements Connector {

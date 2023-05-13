@@ -1,4 +1,4 @@
-package com.nobu.event;
+package com.nobu.spi.event;
 
 
 import java.io.Serializable;

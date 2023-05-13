@@ -11,7 +11,7 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 import com.nobu.spi.connect.Connector;
 import com.nobu.spi.connect.Context;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 
 import java.io.FileInputStream;
 import java.io.IOException;
