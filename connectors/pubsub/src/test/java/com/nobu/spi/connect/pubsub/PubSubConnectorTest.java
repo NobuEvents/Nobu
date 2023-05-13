@@ -1,11 +1,9 @@
-package com.nobu.connect.pubsub;
+package com.nobu.spi.connect.pubsub;
 
-import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
-import com.google.pubsub.v1.TopicName;
-import com.nobu.connect.Context;
+import com.nobu.spi.connect.Context;
 import com.nobu.event.NobuEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;

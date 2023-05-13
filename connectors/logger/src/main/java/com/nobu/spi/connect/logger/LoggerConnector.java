@@ -1,7 +1,7 @@
-package com.nobu.connect.logger;
+package com.nobu.spi.connect.logger;
 
-import com.nobu.connect.Connector;
-import com.nobu.connect.Context;
+import com.nobu.spi.connect.Connector;
+import com.nobu.spi.connect.Context;
 import com.nobu.event.NobuEvent;
 import org.jboss.logging.Logger;
 

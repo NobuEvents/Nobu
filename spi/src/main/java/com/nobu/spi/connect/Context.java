@@ -1,4 +1,4 @@
-package com.nobu.connect;
+package com.nobu.spi.connect;
 
 import java.util.Map;
 

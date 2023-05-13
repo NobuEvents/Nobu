@@ -1,17 +1,16 @@
-package com.nobu.connect.pubsub;
+package com.nobu.spi.connect.pubsub;
 
 import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
-import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
-import com.nobu.connect.Connector;
-import com.nobu.connect.Context;
+import com.nobu.spi.connect.Connector;
+import com.nobu.spi.connect.Context;
 import com.nobu.event.NobuEvent;
 
 import java.io.FileInputStream;
