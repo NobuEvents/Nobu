@@ -1,4 +1,4 @@
-package com.nobu.spi.connect.logger;
+package com.nobu.connect.logger;
 
 import com.nobu.spi.connect.Connector;
 import com.nobu.spi.connect.Context;

@@ -1,4 +1,4 @@
-package com.nobu.spi.connect.pubsub;
+package com.nobu.connect.pubsub;
 
 import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.CredentialsProvider;
