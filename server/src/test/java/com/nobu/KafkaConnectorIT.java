@@ -75,7 +75,7 @@ public class KafkaConnectorIT {
                 """.getBytes();
 
         NobuEvent event = new NobuEvent();
-        event.setType("signup");
+        event.setRouterId("signup");
         event.setSchema("add_widget");
         event.setMessage(invalidMessage);
         event.setTimestamp(1L);
@@ -92,7 +92,7 @@ public class KafkaConnectorIT {
                 """.getBytes();
 
         NobuEvent event = new NobuEvent();
-        event.setType("signup");
+        event.setRouterId("signup");
         event.setSchema("add_widget");
         event.setMessage(invalidMessage);
         event.setTimestamp(1L);

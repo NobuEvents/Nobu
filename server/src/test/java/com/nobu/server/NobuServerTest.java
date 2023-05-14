@@ -28,7 +28,7 @@ public class NobuServerTest {
                 """.getBytes();
 
         NobuEvent event = new NobuEvent();
-        event.setType("signup");
+        event.setRouterId("signup");
         event.setSchema("signup");
 
         event.setMessage(message);
