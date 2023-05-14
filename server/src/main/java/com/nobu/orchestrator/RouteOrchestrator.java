@@ -1,4 +1,4 @@
-package com.nobu.scheduler;
+package com.nobu.orchestrator;
 
 import com.nobu.spi.connect.Connector;
 import com.nobu.spi.connect.ConnectorFactory;
@@ -21,9 +21,9 @@ import java.util.Objects;
 
 @Startup
 @ApplicationScoped
-public class RouteScheduler {
+public class RouteOrchestrator {
 
-  private static final Logger LOG = Logger.getLogger(RouteScheduler.class);
+  private static final Logger LOG = Logger.getLogger(RouteOrchestrator.class);
 
   private RouteFactory routeFactory;
 

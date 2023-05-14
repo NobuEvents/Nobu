@@ -1,4 +1,4 @@
-package com.nobu.scheduler;
+package com.nobu.orchestrator;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
@@ -9,10 +9,10 @@ import javax.inject.Inject;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-public class RouteSchedulerTest {
+public class RouteOrchestratorTest {
 
     @Inject
-    RouteScheduler scheduler;
+    RouteOrchestrator scheduler;
 
     @Test
     public void readRouteConfigTest() {
