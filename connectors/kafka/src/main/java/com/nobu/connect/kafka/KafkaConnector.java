@@ -1,4 +1,4 @@
-package com.nobu.spi.connect.kafka;
+package com.nobu.connect.kafka;
 
 import com.nobu.spi.connect.Connector;
 import com.nobu.spi.connect.Context;

@@ -1,4 +1,4 @@
-package com.nobu.spi.connect.console;
+package com.nobu.connect.console;
 
 import com.nobu.spi.connect.Connector;
 import com.nobu.spi.connect.Context;

@@ -1,7 +1,7 @@
 package com.nobu.orchestrator;
 
 import com.nobu.spi.connect.Connector;
-import com.nobu.spi.connect.ConnectorFactory;
+import com.nobu.connect.ConnectorFactory;
 import com.nobu.queue.EventQueue;
 import com.nobu.queue.EventQueueFactory;
 import com.nobu.route.RouteFactory;
