@@ -9,7 +9,7 @@ import javax.inject.Inject;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-public class RouteSchedulerTest {
+public class RouteOrchestratorTest {
 
     @Inject
     RouteOrchestrator scheduler;
