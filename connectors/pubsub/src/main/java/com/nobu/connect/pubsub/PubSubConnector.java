@@ -90,7 +90,7 @@ public class PubSubConnector implements Connector {
 
     PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
         .setData(ByteString.copyFrom(nobuEvent.getMessage()))
-        .putAttributes("type", nobuEvent.getType())
+        .putAttributes("type", nobuEvent.getRouterId())
         .putAttributes("schema", nobuEvent.getSchema() == null ? "" : nobuEvent.getSchema())
         .putAttributes("timestamp", nobuEvent.getTimestamp() == null ? "" : nobuEvent.getTimestamp().toString())
         .putAttributes("host", nobuEvent.getHost() == null ? "" : nobuEvent.getHost())

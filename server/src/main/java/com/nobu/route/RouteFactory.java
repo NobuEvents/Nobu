@@ -69,16 +69,16 @@ public class RouteFactory {
 
     public static class Route {
 
-        private String type;
+        private String id;
         private String target;
         private Map<String, String> config;
 
-        public String getType() {
-            return type;
+        public String getId() {
+            return id;
         }
 
-        public void setType(String type) {
-            this.type = type;
+        public void setId(String id) {
+            this.id = id;
         }
 
         public String getTarget() {

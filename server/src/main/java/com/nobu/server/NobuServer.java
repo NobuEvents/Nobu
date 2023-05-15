@@ -46,7 +46,7 @@ public class NobuServer {
     EventQueue eventQueue = getEventQueue(event);
 
     if (eventQueue == null) {
-      LOG.error("No EventQueue queue for type " + event.getType());
+      LOG.error("No EventQueue queue for type " + event.getRouterId());
       return "error";
     }
 
@@ -63,11 +63,11 @@ public class NobuServer {
 
   private EventQueue getEventQueue(NobuEvent event) {
     if (!celValidator.test(event)) {
-      LOG.warn("CEL validation failed for event type " + event.getType() +
+      LOG.warn("CEL validation failed for event type " + event.getRouterId() +
           " and event schema " + event.getSchema());
       return eventQueueFactory.get(DLQ_TYPE_NAME);
     } else {
-      return eventQueueFactory.get(event.getType());
+      return eventQueueFactory.get(event.getRouterId());
     }
   }
 

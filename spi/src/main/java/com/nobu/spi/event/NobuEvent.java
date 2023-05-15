@@ -8,7 +8,7 @@ import java.util.Arrays;
 public class NobuEvent implements Serializable {
 
 
-    private String type;
+    private String routerId;
 
     private String schema;
 
@@ -20,8 +20,8 @@ public class NobuEvent implements Serializable {
 
     private byte[] message;
 
-    public void setType(String type) {
-        this.type = type;
+    public void setRouterId(String routerId) {
+        this.routerId = routerId;
     }
 
     public void setMessage(byte[] message) {
@@ -40,8 +40,8 @@ public class NobuEvent implements Serializable {
         this.offset = offset;
     }
 
-    public String getType() {
-        return type;
+    public String getRouterId() {
+        return routerId;
     }
 
     public byte[] getMessage() {
@@ -71,11 +71,11 @@ public class NobuEvent implements Serializable {
     @Override
     public String toString() {
         return String.format("Event{type=%s, message=%s, timestampNs=$d, host=%s, offset=%d}",
-                type, Arrays.toString(message), timestamp, host, offset);
+            routerId, Arrays.toString(message), timestamp, host, offset);
     }
 
     public void deepCopy(NobuEvent event) {
-        this.type = event.getType();
+        this.routerId = event.getRouterId();
         this.schema = event.getSchema();
         this.message = event.getMessage();
         this.timestamp = event.getTimestamp();

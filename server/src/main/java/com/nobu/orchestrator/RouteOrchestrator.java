@@ -57,15 +57,15 @@ public class RouteOrchestrator {
    */
   private void startEventQueue(RouteFactory routeFactory) {
     for (var route : routeFactory.getRoutes()) {
-      if (eventQueueFactory.get(route.getType()) == null) {
-        var queue = new EventQueue(route.getType());
-        eventQueueFactory.put(route.getType(), queue);
+      if (eventQueueFactory.get(route.getId()) == null) {
+        var queue = new EventQueue(route.getId());
+        eventQueueFactory.put(route.getId(), queue);
       }
 
       LOG.info("Registering Connection Handler for route: " + route);
       var connectorHandle = getConnector(route, routeFactory.getConnectionMap());
       if (connectorHandle.isPresent()) {
-        Objects.requireNonNull(eventQueueFactory.get(route.getType()))
+        Objects.requireNonNull(eventQueueFactory.get(route.getId()))
             .addHandle(connectorHandle.get());
       } else {
         LOG.error("Unable to register the connection handler for route: " + route);

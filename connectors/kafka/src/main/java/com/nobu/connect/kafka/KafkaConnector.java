@@ -80,13 +80,13 @@ public class KafkaConnector implements Connector {
     ProducerRecord<String, byte[]> record;
     if (sendHeaders) {
       List<Header> headers = new ArrayList<>();
-      headers.add(new RecordHeader("type", event.getType().getBytes()));
+      headers.add(new RecordHeader("type", event.getRouterId().getBytes()));
       headers.add(new RecordHeader("schema", event.getSchema().getBytes()));
       headers.add(new RecordHeader("timestamp", event.getTimestamp().toString().getBytes()));
       headers.add(new RecordHeader("host", event.getHost().getBytes()));
       headers.add(new RecordHeader("offset", event.getOffset().toString().getBytes()));
       headers.add(new RecordHeader("sequence", String.valueOf(sequence).getBytes()));
-      record = new ProducerRecord<>(getTopic(), null, event.getType(), event.getMessage(), headers);
+      record = new ProducerRecord<>(getTopic(), null, event.getRouterId(), event.getMessage(), headers);
     } else {
       record = new ProducerRecord<>(getTopic(), event.getMessage());
     }
