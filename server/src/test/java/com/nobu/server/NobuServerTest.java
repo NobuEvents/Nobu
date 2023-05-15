@@ -29,7 +29,7 @@ public class NobuServerTest {
 
         NobuEvent event = new NobuEvent();
         event.setRouterId("signup");
-        event.setSchema("signup");
+        event.setSrn("signup");
 
         event.setMessage(message);
         event.setTimestamp(1L);

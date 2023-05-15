@@ -81,7 +81,7 @@ public class KafkaConnector implements Connector {
     if (sendHeaders) {
       List<Header> headers = new ArrayList<>();
       headers.add(new RecordHeader("type", event.getRouterId().getBytes()));
-      headers.add(new RecordHeader("schema", event.getSchema().getBytes()));
+      headers.add(new RecordHeader("schema", event.getSrn().getBytes()));
       headers.add(new RecordHeader("timestamp", event.getTimestamp().toString().getBytes()));
       headers.add(new RecordHeader("host", event.getHost().getBytes()));
       headers.add(new RecordHeader("offset", event.getOffset().toString().getBytes()));

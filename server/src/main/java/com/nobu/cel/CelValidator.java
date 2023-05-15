@@ -37,7 +37,7 @@ public class CelValidator implements Predicate<NobuEvent> {
 
             };
             Map<String, Object> map = mapper.readValue(event.getMessage(), typeRef);
-            var scripts = schemaLoader.getCelManager().getScript(event.getSchema());
+            var scripts = schemaLoader.getCelManager().getScript(event.getSrn());
 
             int trueCount = 0;
             for (var script : scripts) {
@@ -48,7 +48,7 @@ public class CelValidator implements Predicate<NobuEvent> {
             return trueCount == scripts.size();
 
         } catch (IOException | ScriptException e) {
-            LOG.error("Error executing CEL script for nobu schema" + event.getSchema(), e);
+            LOG.error("Error executing CEL script for nobu schema" + event.getSrn(), e);
         }
         return false;
     }

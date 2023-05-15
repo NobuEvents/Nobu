@@ -15,9 +15,9 @@ public class SchemaFactoryTest {
         var schemaMap = schemaFactory.get();
         assertNotNull(schemaMap);
         assertNotNull(schemaMap.getSchemaMap());
-        assertNotNull(schemaMap.getSchemaMap().get("signup"));
+        assertNotNull(schemaMap.getSchemaMap().get("srn:acme:growth:signup:1.0.0"));
 
-        var signupSchema = schemaMap.getSchemaMap().get("signup");
+        var signupSchema = schemaMap.getSchemaMap().get("srn:acme:growth:signup:1.0.0");
         assertEquals("entity", signupSchema.getType());
         assertEquals("core", signupSchema.getDomain());
 
