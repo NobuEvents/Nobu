@@ -7,17 +7,55 @@ import java.util.Arrays;
 
 public class NobuEvent implements Serializable {
 
-
+    /**
+     * The router id is a unique identifier for the router.
+     * <p>
+     *     RouterId can have one-to-many {@link com.nobu.spi.connect.Connector} association.
+     *     The system will route the message to all the connector implementations associated with the router id.
+     * </p>
+     */
     private String routerId;
 
-    private String schema;
+    /**
+     * Schema Resource Name (SRN) is a unique identifier for a schema.
+     * <p>
+     *     The SRN is used to identify the schema of the message. We recommend SRN structure as
+     *     <code>srn:organization:domain:schemaName:schemaVersion</code>
+     *     (e.g.) <code>srn:nobu:core:user:1-0-0</code>.
+     * </p>
+     * <p>
+     *     The above example shows the SRN for the user schema. The schema version is 1-0-0. The schema belong to
+     *     the core domain of the nobu organization.
+     * </p>
+     *
+     * <p>
+     *     The SRN field is an optional field. If there is no SRN defined, the system will not verify Data Quality Checks.
+     * </p>
+     *
+     */
+    private String srn;
 
+    /**
+     * The timestamp of the message. Timestamp is in nanoseconds. Timestamp is an optional field.
+     * <p>
+     *     Having the timestamp field will help the connectors to add event time processing logics.
+     * </p>
+     */
     private Long timestamp;
 
+    /**
+     * The host is the source of the message. Host is an optional field.
+     */
     private String host;
 
+    /**
+     * The offset is the position of the message in the source. Offset is an optional field.
+     */
     private Long offset;
 
+    /**
+     * The message is the actual payload of the event.
+     */
     private byte[] message;
 
     public void setRouterId(String routerId) {
@@ -60,12 +98,12 @@ public class NobuEvent implements Serializable {
         return offset;
     }
 
-    public String getSchema() {
-        return schema;
+    public String getSrn() {
+        return srn;
     }
 
-    public void setSchema(String schema) {
-        this.schema = schema;
+    public void setSrn(String srn) {
+        this.srn = srn;
     }
 
     @Override
@@ -76,7 +114,7 @@ public class NobuEvent implements Serializable {
 
     public void deepCopy(NobuEvent event) {
         this.routerId = event.getRouterId();
-        this.schema = event.getSchema();
+        this.srn = event.getSrn();
         this.message = event.getMessage();
         this.timestamp = event.getTimestamp();
         this.host = event.getHost();

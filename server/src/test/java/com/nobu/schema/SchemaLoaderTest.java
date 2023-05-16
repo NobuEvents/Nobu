@@ -19,10 +19,10 @@ public class SchemaLoaderTest {
 
         assertTrue(loader.getSchemaMap().size() > 0);
 
-        assertEquals("workflow", loader.getSchemaMap().get("add_widget").getDomain());
+        assertEquals("workflow", loader.getSchemaMap().get("srn:acme:workspace:add_widget:1.0.0").getDomain());
 
         String expected = "event == 'signup' && phone_number > 200 && user.phone > 2";
-        assertEquals(expected, loader.getSchemaMap().get("signup").getValidators().get("dlq").getQuery());
+        assertEquals(expected, loader.getSchemaMap().get("srn:acme:growth:signup:1.0.0").getValidators().get("dlq").getQuery());
 
     }
 }

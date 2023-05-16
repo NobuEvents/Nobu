@@ -62,9 +62,10 @@ public class NobuServer {
   }
 
   private EventQueue getEventQueue(NobuEvent event) {
-    if (!celValidator.test(event)) {
+
+    if (event.getSrn() != null && !celValidator.test(event)) {
       LOG.warn("CEL validation failed for event type " + event.getRouterId() +
-          " and event schema " + event.getSchema());
+          " and event schema " + event.getSrn());
       return eventQueueFactory.get(DLQ_TYPE_NAME);
     } else {
       return eventQueueFactory.get(event.getRouterId());
