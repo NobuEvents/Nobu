@@ -44,12 +44,18 @@ public class SchemaLoader {
     @PostConstruct
     public void initialize() {
         LOG.info("Initializing Schema Loader");
-        var schemaDir = ConfigProvider.getConfig().getValue("schema.dir", String.class);
-        var schemaExt = ConfigProvider.getConfig().getValue("schema.ext", String.class);
+        var schemaDir = ConfigProvider.getConfig().getOptionalValue("schema.dir", String.class);
+        var schemaExt = ConfigProvider.getConfig().getOptionalValue("schema.ext", String.class);
 
-        readFilesRecursively(schemaDir, schemaExt);
+        if (schemaDir.isEmpty() || schemaExt.isEmpty()) {
+            LOG.error("Schema directory not found in config: Switching to no schema validation mode");
+        } else {
+            LOG.info("Schema directory found in config: " + schemaDir.get());
+            readFilesRecursively(schemaDir.get(), schemaExt.get());
 
-        buildCelScript(schemaDir);
+            buildCelScript(schemaDir.get());
+        }
+
     }
 
     /**
