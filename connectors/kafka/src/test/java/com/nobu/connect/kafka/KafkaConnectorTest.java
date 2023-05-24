@@ -96,10 +96,10 @@ public class KafkaConnectorTest {
     when(connector.getRecords()).thenReturn(records);
 
     NobuEvent event1 = new NobuEvent();
-    event1.setRouterId("type1");
+    event1.setEventName("type1");
     event1.setMessage("message1".getBytes());
     NobuEvent event2 = new NobuEvent();
-    event2.setRouterId("type1");
+    event2.setEventName("type1");
     event2.setMessage("message2".getBytes());
 
     // Publish a couple of message with endOfBatch=false

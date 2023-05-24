@@ -59,14 +59,14 @@ public class PubSubConnectorTest {
   void onEvent()
       throws Exception {
     NobuEvent nobuEvent = new NobuEvent();
-    nobuEvent.setRouterId("type1");
+    nobuEvent.setEventName("type1");
     nobuEvent.setMessage("message1".getBytes());
 
     pubSubConnector.onEvent(nobuEvent, 0, false);
 
     PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
         .setData(ByteString.copyFrom(nobuEvent.getMessage()))
-        .putAttributes("type", nobuEvent.getRouterId())
+        .putAttributes("type", nobuEvent.getEventName())
         .putAttributes("schema", "")
         .putAttributes("timestamp", "")
         .putAttributes("host", "")

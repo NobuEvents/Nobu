@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft/2020-12/schema",
+  "title": "Acme Schemas",
+  "description": "A collection of schemas for Acme applications",
+  "type": "object",
+  "properties": {
+    "srn:acme:growth:signup:1.0.0": {
+      "type": "object",
+      "description": "A signup event",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the user",
+          "is_pii": true
+        },
+        "account_id": {
+          "type": "long",
+          "description": "The account_id of the user",
+          "key": {
+            "type": "foreign",
+            "target": "account",
+            "target_field": "id"
+          }
+        },
+        "email": {
+          "type": "string",
+          "description": "The email of the user",
+          "is_pii": true
+        },
+        "password": {
+          "type": "string",
+          "description": "The password of the user",
+          "is_pii": true
+        },
+        "date_of_birth": {
+          "type": "date",
+          "description": "The date of birth of the user",
+          "is_pii": true
+        },
+        "ip_address": {
+          "type": "string",
+          "description": "The ip_address of the user",
+          "is_pii": true
+        }
+      },
+      "validators": {
+        "dlq": {
+          "name": "signup length and event checker",
+          "description": "The event is signup and the phone number is greater than 200",
+          "query": "event == 'signup' && phone_number > 200",
+          "target": "dlq_kafka"
+        }
+      }
+    },
+    "srn:acme:workspace:add_widget:1.0.0": {
+      "type": "object",
+      "description": "A widget was added",
+      "properties": {
+        "widget_id": {
+          "type": "long",
+          "description": "The id of the widget",
+          "key": {
+            "type": "primary"
+          }
+        },
+        "widget_name": {
+          "type": "string",
+          "description": "The name of the widget"
+        },
+        "widget_type": {
+          "type": "string",
+          "description": "The type of the widget"
+        },
+        "widget_timestamp": {
+          "type": "timestamp",
+          "description": "The timestamp of the widget"
+        }
+      },
+      "validators": {
+        "dlq": {
+          "name": "widget length and event checker",
+          "description": "The event is add_widget and the widget_id is greater than 200",
+          "query": "event == 'add_widget' && widget_id > 200",
+          "target": "dlq_kafka"
+        }
+      }
+    }
+  }
+}

@@ -90,11 +90,11 @@ public class PubSubConnector implements Connector {
 
     PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
         .setData(ByteString.copyFrom(nobuEvent.getMessage()))
-        .putAttributes("type", nobuEvent.getRouterId())
+        .putAttributes("type", nobuEvent.getEventName())
         .putAttributes("schema", nobuEvent.getSrn() == null ? "" : nobuEvent.getSrn())
         .putAttributes("timestamp", nobuEvent.getTimestamp() == null ? "" : nobuEvent.getTimestamp().toString())
         .putAttributes("host", nobuEvent.getHost() == null ? "" : nobuEvent.getHost())
-        .putAttributes("offset", nobuEvent.getOffset() == null ? "" : nobuEvent.getOffset().toString())
+        .putAttributes("offset", nobuEvent.getEventId() == null ? "" : nobuEvent.getEventId())
         .putAttributes("sequence", String.valueOf(sequence))
         .build();
     publisher.publish(pubsubMessage);
