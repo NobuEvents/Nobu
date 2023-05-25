@@ -38,5 +38,5 @@ WORKDIR /server
 
 
 COPY --from=builder /app/server/target/quarkus-app/ .
-EXPOSE 7080
+EXPOSE 7070
 CMD ["java", "-jar", "quarkus-run.jar"]
