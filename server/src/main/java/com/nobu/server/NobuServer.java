@@ -2,7 +2,7 @@ package com.nobu.server;
 
 import com.lmax.disruptor.RingBuffer;
 import com.nobu.cel.CelValidator;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import com.nobu.queue.EventQueue;
 import com.nobu.queue.EventQueueFactory;
 import io.quarkus.runtime.Quarkus;
@@ -46,7 +46,7 @@ public class NobuServer {
     EventQueue eventQueue = getEventQueue(event);
 
     if (eventQueue == null) {
-      LOG.error("No EventQueue queue for type " + event.getType());
+      LOG.error("No EventQueue queue for type " + event.getEventName());
       return "error";
     }
 
@@ -62,12 +62,13 @@ public class NobuServer {
   }
 
   private EventQueue getEventQueue(NobuEvent event) {
-    if (!celValidator.test(event)) {
-      LOG.warn("CEL validation failed for event type " + event.getType() +
-          " and event schema " + event.getSchema());
+
+    if (event.getSrn() != null && !celValidator.test(event)) {
+      LOG.warn("CEL validation failed for event type " + event.getEventName() +
+          " and event schema " + event.getSrn());
       return eventQueueFactory.get(DLQ_TYPE_NAME);
     } else {
-      return eventQueueFactory.get(event.getType());
+      return eventQueueFactory.get(event.getEventName());
     }
   }
 

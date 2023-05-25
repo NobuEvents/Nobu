@@ -1,7 +1,7 @@
 package com.nobu.cel;
 
 
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -35,8 +35,8 @@ public class CelValidatorTest {
                 """.getBytes();
 
         NobuEvent event = new NobuEvent();
-        event.setType("onboarding");
-        event.setSchema("signup");
+        event.setEventName("onboarding");
+        event.setSrn("signup");
         event.setMessage(message);
         event.setTimestamp(1L);
         assertTrue(celValidator.test(event));

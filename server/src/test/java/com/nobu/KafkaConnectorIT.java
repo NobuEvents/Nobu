@@ -1,7 +1,7 @@
 package com.nobu;
 
-import com.nobu.event.NobuEvent;
-import com.nobu.scheduler.RouteScheduler;
+import com.nobu.spi.event.NobuEvent;
+import com.nobu.orchestrator.RouteOrchestrator;
 import io.quarkus.test.junit.QuarkusTest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
@@ -27,7 +27,7 @@ public class KafkaConnectorIT {
     KafkaContainer kafkaContainer;
 
     @Inject
-    RouteScheduler routeScheduler;
+    RouteOrchestrator routeScheduler;
 
     @BeforeEach
     public void setUp() {
@@ -75,8 +75,8 @@ public class KafkaConnectorIT {
                 """.getBytes();
 
         NobuEvent event = new NobuEvent();
-        event.setType("signup");
-        event.setSchema("add_widget");
+        event.setEventName("signup");
+        event.setSrn("add_widget");
         event.setMessage(invalidMessage);
         event.setTimestamp(1L);
         return event;
@@ -92,8 +92,8 @@ public class KafkaConnectorIT {
                 """.getBytes();
 
         NobuEvent event = new NobuEvent();
-        event.setType("signup");
-        event.setSchema("add_widget");
+        event.setEventName("signup");
+        event.setSrn("add_widget");
         event.setMessage(invalidMessage);
         event.setTimestamp(1L);
         return event;

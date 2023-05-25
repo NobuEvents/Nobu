@@ -1,5 +1,5 @@
 schemas:
-  signup:
+  srn:acme:growth:signup:1.0.0:
     type: entity
     description: A signup event
     owner: Growth Team
@@ -50,7 +50,7 @@ schemas:
         query: event == 'signup' && phone_number > 200 && user.phone > 2
         target: dlq_kafka
 
-  add_widget:
+  srn:acme:workspace:add_widget:1.0.0:
     type: event
     description: A widget was added
     owner: Growth Team

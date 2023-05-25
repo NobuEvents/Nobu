@@ -11,6 +11,9 @@
   </parent>
 
   <artifactId>console</artifactId>
+  <packaging>jar</packaging>
+  <version>${project.parent.version}</version>
+  <name>Simple Console Connector</name>
 
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
@@ -21,7 +24,7 @@
   <dependencies>
     <dependency>
       <groupId>com.nobustream</groupId>
-      <artifactId>spec</artifactId>
+      <artifactId>spi</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
   </dependencies>

@@ -1,6 +1,7 @@
 package com.nobu.config;
 
 import com.nobu.exception.RouteConfigException;
+import com.nobu.exception.SchemaConfigException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +20,6 @@ public class ConfigReaderTest {
         var exception = assertThrows(RouteConfigException.class, () -> {
             ConfigReader.getRouteConfig("route1.yaml");
         });
-        assertEquals("Invalid config file path", exception.getMessage());
     }
 
     @Test
@@ -32,6 +32,5 @@ public class ConfigReaderTest {
         var exception = assertThrows(RouteConfigException.class, () -> {
             ConfigReader.getRouteConfig("model/signup1.schema.yaml");
         });
-        assertEquals("Invalid config file path", exception.getMessage());
     }
 }

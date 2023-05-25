@@ -3,7 +3,7 @@ package com.nobu.queue;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import io.quarkus.logging.Log;
 
 import java.util.ArrayList;

@@ -3,6 +3,8 @@ package com.nobu.connect;
 
 import com.nobu.route.RouteFactory;
 
+import com.nobu.spi.connect.Connector;
+import com.nobu.spi.connect.Context;
 import java.util.Optional;
 import javax.inject.Singleton;
 

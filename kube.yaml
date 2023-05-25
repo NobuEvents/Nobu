@@ -17,7 +17,7 @@ spec:
         - name: nobu-app
           image: gcr.io/just-site-344717/nobu:1.0
           ports:
-            - containerPort: 7070
+            - containerPort: 8080
           resources:
             limits:
               cpu: 500m
@@ -51,11 +51,11 @@ spec:
     app: dev
   ports:
     - name: http
-      port: 7070
-      targetPort: 7070
+      port: 8080
+      targetPort: 8080
       protocol: TCP
     - name: https
       port: 443
-      targetPort: 7070
+      targetPort: 8080
       protocol: TCP
 ---

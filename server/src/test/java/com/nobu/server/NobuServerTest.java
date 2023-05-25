@@ -1,6 +1,6 @@
 package com.nobu.server;
 
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.event.NobuEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -28,8 +28,8 @@ public class NobuServerTest {
                 """.getBytes();
 
         NobuEvent event = new NobuEvent();
-        event.setType("signup");
-        event.setSchema("signup");
+        event.setEventName("signup");
+        event.setSrn("signup");
 
         event.setMessage(message);
         event.setTimestamp(1L);

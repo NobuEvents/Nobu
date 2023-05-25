@@ -1,7 +1,7 @@
 package com.nobu.connect.kafka;
 
-import com.nobu.connect.Context;
-import com.nobu.event.NobuEvent;
+import com.nobu.spi.connect.Context;
+import com.nobu.spi.event.NobuEvent;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -96,10 +96,10 @@ public class KafkaConnectorTest {
     when(connector.getRecords()).thenReturn(records);
 
     NobuEvent event1 = new NobuEvent();
-    event1.setType("type1");
+    event1.setEventName("type1");
     event1.setMessage("message1".getBytes());
     NobuEvent event2 = new NobuEvent();
-    event2.setType("type1");
+    event2.setEventName("type1");
     event2.setMessage("message2".getBytes());
 
     // Publish a couple of message with endOfBatch=false

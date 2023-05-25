@@ -11,8 +11,10 @@
     <module>server</module>
     <module>connectors</module>
     <module>connectors/kafka</module>
-    <module>spec</module>
+    <module>spi</module>
     <module>connectors/console</module>
+    <module>connectors/pubsub</module>
+      <module>connectors/logger</module>
   </modules>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
@@ -26,12 +28,17 @@
     <jackson.yaml.version>2.14.1</jackson.yaml.version>
     <lmax.disruptor.version>3.4.4</lmax.disruptor.version>
     <commons.lang.version>3.12.0</commons.lang.version>
+    <jboss.logging.version>3.5.0.Final</jboss.logging.version>
     <testcontainers.version>1.17.2</testcontainers.version>
     <mockito.version>5.2.0</mockito.version>
     <restassured.version>5.3.0</restassured.version>
     <docker.java>3.3.0</docker.java>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
+
+    <shadeSources>true</shadeSources>
+    <maven-shade-plugin.version>3.4.1</maven-shade-plugin.version>
+
   </properties>
 
   <dependencyManagement>
@@ -68,6 +75,12 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>${commons.lang.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.logging</groupId>
+        <artifactId>jboss-logging</artifactId>
+        <version>${jboss.logging.version}</version>
       </dependency>
 
       <dependency>

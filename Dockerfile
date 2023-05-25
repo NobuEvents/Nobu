@@ -1,42 +1,35 @@
-#stage 1
-FROM maven:3.9.1 as builder
+FROM maven:3.8.4-openjdk-17-slim AS build
+
+WORKDIR /usr/src/source
+
+# Build the application
+
+COPY ./pom.xml ./pom.xml
+COPY ./server ./server
+COPY ./spec ./spec
+COPY ./connectors ./connectors
+RUN mvn clean install package -DskipTests
+
+FROM openjdk:17-slim
 
 WORKDIR /app
-ADD pom.xml .
-ADD server/pom.xml ./server/pom.xml
-ADD spec/pom.xml ./spec/pom.xml
 
-ADD connectors/pom.xml ./connectors/pom.xml
-ADD connectors/kafka/pom.xml ./connectors/kafka/pom.xml
-ADD connectors/console/pom.xml ./connectors/console/pom.xml
+# Include Quarkus application's .jar files in container
+COPY --from=build /usr/src/source/server/target/quarkus-app /app/quarkus-app
 
-RUN mvn -pl spec verify --fail-never
-ADD spec ./spec
-RUN mvn -pl spec install
+# Copy the configuration files
+COPY ./server/src/main/resources/route.yaml /app/quarkus-app/server/src/main/resources/route.yaml
+COPY ./server/src/main/resources/schema /app/quarkus-app/server/src/main/resources/schema
 
-RUN mvn install
+COPY config.properties /app/quarkus-app/config.properties
 
-RUN mvn -pl connectors/kafka verify --fail-never #run tests
-ADD connectors/kafka ./connectors/kafka
-RUN mvn -pl connectors/kafka install
-
-RUN mvn -pl connectors/console verify --fail-never
-ADD connectors/console ./connectors/console
-RUN mvn -pl connectors/console install
-
-RUN mvn -pl connectors install
-
-RUN mvn -pl server verify --fail-never
-ADD server ./server
-RUN mvn -pl server install
-
-RUN mvn -pl spec,connectors,server package
-
-#stage 2
-From openjdk:17
-WORKDIR /server
+WORKDIR /app/quarkus-app
 
 
-COPY --from=builder /app/server/target/quarkus-app/ .
-EXPOSE 7070
-CMD ["java", "-jar", "quarkus-run.jar"]
+# Make sure set the Quarkus configuration file location
+ENV QUARKUS_CONFIG_LOCATIONS=config.properties
+
+EXPOSE 8080
+
+
+CMD java -jar quarkus-run.jar -Dquarkus.http.port=8080
