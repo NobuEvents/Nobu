@@ -1,0 +1,61 @@
+# Deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nobu-dep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dev
+  template:
+    metadata:
+      labels:
+        app: dev
+    spec:
+      containers:
+        - name: nobu-app
+          image: gcr.io/just-site-344717/nobu:1.0
+          ports:
+            - containerPort: 7070
+          resources:
+            limits:
+              cpu: 500m
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 2Gi
+---
+# BackendConfig to do health check so above deployment will become ready
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: health-check-config-nobu
+spec:
+  healthCheck:
+    checkIntervalSec: 30
+    port: 7070
+    type: HTTP #case-sensitive
+    requestPath: /q/health/live
+---
+# Service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nobu-service
+  annotations:
+    cloud.google.com/backend-config: '{"default": "health-check-config-nobu"}'
+spec:
+  type: ClusterIP
+  selector:
+    app: dev
+  ports:
+    - name: http
+      port: 7070
+      targetPort: 7070
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 7070
+      protocol: TCP
+---
