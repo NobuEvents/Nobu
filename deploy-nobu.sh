@@ -1,7 +1,16 @@
 #!/bin/bash
 
-docker build -t nobu:1.0 .
-docker tag nobu gcr.io/just-site-344717/nobu:1.0
-docker push gcr.io/just-site-344717/nobu:1.0
+TAG="1.5"
+docker build -t nobu:$TAG .
+docker tag nobu:1.0 gcr.io/just-site-344717/nobu:$TAG
+docker push gcr.io/just-site-344717/nobu:$TAG
 
-kubectl apply -f kube.yaml
+sed -e "s/tag/"$TAG"/g" kube.yaml > kube_latest.yaml
+kubectl delete deploy nobu-dep
+kubectl apply -f kube_latest.yaml
+rm kube_latest.yaml
+
+sleep 60
+POD_NAME=$(kubectl get pods | grep "nobu" | awk '{ print $1 }')
+kubectl port-forward $POD_NAME 8080:8080
+#open http://localhost:8080/q/health/live

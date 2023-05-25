@@ -8,6 +8,7 @@ COPY ./pom.xml ./pom.xml
 COPY ./server ./server
 COPY ./spec ./spec
 COPY ./connectors ./connectors
+COPY ./spi ./spi
 RUN mvn clean install package -DskipTests
 
 FROM openjdk:17-slim
