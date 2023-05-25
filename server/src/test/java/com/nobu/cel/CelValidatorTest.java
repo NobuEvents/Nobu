@@ -35,7 +35,7 @@ public class CelValidatorTest {
                 """.getBytes();
 
         NobuEvent event = new NobuEvent();
-        event.setRouterId("onboarding");
+        event.setEventName("onboarding");
         event.setSrn("signup");
         event.setMessage(message);
         event.setTimestamp(1L);
