@@ -2,7 +2,7 @@
 
 TAG="1.5"
 docker build -t nobu:$TAG .
-docker tag nobu:1.0 gcr.io/just-site-344717/nobu:$TAG
+docker tag nobu:$TAG gcr.io/just-site-344717/nobu:$TAG
 docker push gcr.io/just-site-344717/nobu:$TAG
 
 sed -e "s/tag/"$TAG"/g" kube.yaml > kube_latest.yaml

@@ -34,7 +34,7 @@ metadata:
 spec:
   healthCheck:
     checkIntervalSec: 30
-    port: 7070
+    port: 8080
     type: HTTP #case-sensitive
     requestPath: /q/health/live
 ---
@@ -59,3 +59,17 @@ spec:
       targetPort: 8080
       protocol: TCP
 ---
+#ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nobu
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: nobu-app
+    kubernetes.io/ingress.class: "gce"
+spec:
+  defaultBackend:
+    service:
+      name: nobu-service
+      port:
+        number: 8080
