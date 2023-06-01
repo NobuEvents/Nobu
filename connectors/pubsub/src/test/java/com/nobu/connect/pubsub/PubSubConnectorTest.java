@@ -60,12 +60,12 @@ public class PubSubConnectorTest {
       throws Exception {
     NobuEvent nobuEvent = new NobuEvent();
     nobuEvent.setEventName("type1");
-    nobuEvent.setMessage("message1".getBytes());
+    nobuEvent.setMessage("message1");
 
     pubSubConnector.onEvent(nobuEvent, 0, false);
 
     PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
-        .setData(ByteString.copyFrom(nobuEvent.getMessage()))
+        .setData(ByteString.copyFrom(nobuEvent.getMessage().getBytes()))
         .putAttributes("type", nobuEvent.getEventName())
         .putAttributes("schema", "")
         .putAttributes("timestamp", "")

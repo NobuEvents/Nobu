@@ -86,9 +86,9 @@ public class KafkaConnector implements Connector {
       headers.add(new RecordHeader("host", event.getHost().getBytes()));
       headers.add(new RecordHeader("offset", event.getEventId().getBytes()));
       headers.add(new RecordHeader("sequence", String.valueOf(sequence).getBytes()));
-      record = new ProducerRecord<>(getTopic(), null, event.getEventName(), event.getMessage(), headers);
+      record = new ProducerRecord<>(getTopic(), null, event.getEventName(), event.getMessage().getBytes(), headers);
     } else {
-      record = new ProducerRecord<>(getTopic(), event.getMessage());
+      record = new ProducerRecord<>(getTopic(), event.getMessage().getBytes());
     }
     records.add(record);
     if (endOfBatch) {

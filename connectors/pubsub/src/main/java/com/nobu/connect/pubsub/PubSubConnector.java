@@ -89,7 +89,7 @@ public class PubSubConnector implements Connector {
       throws Exception {
 
     PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
-        .setData(ByteString.copyFrom(nobuEvent.getMessage()))
+        .setData(ByteString.copyFrom(nobuEvent.getMessage().getBytes()))
         .putAttributes("type", nobuEvent.getEventName())
         .putAttributes("schema", nobuEvent.getSrn() == null ? "" : nobuEvent.getSrn())
         .putAttributes("timestamp", nobuEvent.getTimestamp() == null ? "" : nobuEvent.getTimestamp().toString())

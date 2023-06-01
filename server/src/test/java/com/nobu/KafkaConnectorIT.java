@@ -67,12 +67,12 @@ public class KafkaConnectorIT {
 
     @NotNull
     private static NobuEvent getInValidNobuEvent() {
-        byte[] invalidMessage = """
+        String invalidMessage = """
                 {
                  "event":"event",
                  "widget_id": 300
                 }
-                """.getBytes();
+                """;
 
         NobuEvent event = new NobuEvent();
         event.setEventName("signup");
@@ -84,12 +84,12 @@ public class KafkaConnectorIT {
 
     @NotNull
     private static NobuEvent getValidNobuEvent() {
-        byte[] invalidMessage = """
+        String invalidMessage = """
                 {
                  "event":"add_widget",
                  "widget_id": 300
                 }
-                """.getBytes();
+                """;
 
         NobuEvent event = new NobuEvent();
         event.setEventName("signup");

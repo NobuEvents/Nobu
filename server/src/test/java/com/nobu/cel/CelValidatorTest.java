@@ -20,7 +20,7 @@ public class CelValidatorTest {
     @Test
     public void testValidateNobu() {
 
-        byte[] message = """
+        String message = """
                 {
                  "event":"signup",
                  "client":"yahoo.com",
@@ -32,7 +32,7 @@ public class CelValidatorTest {
                     "phone": 3
                  }
                 }
-                """.getBytes();
+                """;
 
         NobuEvent event = new NobuEvent();
         event.setEventName("onboarding");

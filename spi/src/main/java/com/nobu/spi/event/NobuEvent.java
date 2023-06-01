@@ -56,13 +56,13 @@ public class NobuEvent implements Serializable {
     /**
      * The message is the actual payload of the event.
      */
-    private byte[] message;
+    private String message;
 
     public void setEventName(String eventName) {
         this.eventName = eventName;
     }
 
-    public void setMessage(byte[] message) {
+    public void setMessage(String message) {
         this.message = message;
     }
 
@@ -82,7 +82,7 @@ public class NobuEvent implements Serializable {
         return eventName;
     }
 
-    public byte[] getMessage() {
+    public String getMessage() {
         return message;
     }
 
@@ -114,7 +114,7 @@ public class NobuEvent implements Serializable {
         sb.append(", srn='").append(srn).append('\'');
         sb.append(", timestamp=").append(timestamp);
         sb.append(", host='").append(host).append('\'');
-        sb.append(", message=").append(Arrays.toString(message));
+        sb.append(", message=").append(message);
         sb.append('}');
         return sb.toString();
     }

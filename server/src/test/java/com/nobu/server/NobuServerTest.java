@@ -14,9 +14,9 @@ import static org.hamcrest.Matchers.is;
 public class NobuServerTest {
 
     @Test
-    public void testEventServer() throws IOException, InterruptedException {
+    public void testEventServer()  {
 
-        byte[] message = """
+        String message = """
                 {
                  "event":"signup",
                  "client":"yahoo.com",
@@ -25,7 +25,7 @@ public class NobuServerTest {
                     "phone": 100
                  }
                 }
-                """.getBytes();
+                """;
 
         NobuEvent event = new NobuEvent();
         event.setEventName("signup");
