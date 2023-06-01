@@ -55,3 +55,10 @@ routes:
     target: console_main
     config:
       url: https://nobu.segment.com/webhook
+  - id: onboard
+    target: front_kafka
+    config:
+      topic: onboard_kafka_front
+  - id: onboard
+    target: console_main
+
