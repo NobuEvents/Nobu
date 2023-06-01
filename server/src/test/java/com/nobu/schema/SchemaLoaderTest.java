@@ -24,5 +24,8 @@ public class SchemaLoaderTest {
         String expected = "event == 'signup' && phone_number > 200 && user.phone > 2";
         assertEquals(expected, loader.getSchemaMap().get("srn:acme:growth:signup:1.0.0").getValidators().get("dlq").getQuery());
 
+        String expectedQuery = "email != null && account_id > 0 && user_id != null && location.ip_address != null";
+        assertEquals(expectedQuery, loader.getSchemaMap().get("srn:acme:growth:onboard:1.0.0").getValidators().get("dlq").getQuery());
+
     }
 }

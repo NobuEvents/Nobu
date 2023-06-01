@@ -108,8 +108,15 @@ public class NobuEvent implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("Event{type=%s, message=%s, timestampNs=$d, host=%s, offset=%d}",
-                eventName, Arrays.toString(message), timestamp, host, eventId);
+        final StringBuilder sb = new StringBuilder("NobuEvent{");
+        sb.append("eventName='").append(eventName).append('\'');
+        sb.append(", eventId='").append(eventId).append('\'');
+        sb.append(", srn='").append(srn).append('\'');
+        sb.append(", timestamp=").append(timestamp);
+        sb.append(", host='").append(host).append('\'');
+        sb.append(", message=").append(Arrays.toString(message));
+        sb.append('}');
+        return sb.toString();
     }
 
     public void deepCopy(NobuEvent event) {
