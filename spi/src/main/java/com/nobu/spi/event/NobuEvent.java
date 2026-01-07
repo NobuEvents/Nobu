@@ -122,7 +122,16 @@ public class NobuEvent implements Serializable {
     public void deepCopy(NobuEvent event) {
         this.eventName = event.getEventName();
         this.srn = event.getSrn();
-        this.message = event.getMessage();
+        
+        // Optimize byte array copy
+        byte[] srcMessage = event.getMessage();
+        if (srcMessage != null) {
+            this.message = new byte[srcMessage.length];
+            System.arraycopy(srcMessage, 0, this.message, 0, srcMessage.length);
+        } else {
+            this.message = null;
+        }
+        
         this.timestamp = event.getTimestamp();
         this.host = event.getHost();
         this.eventId = event.getEventId();

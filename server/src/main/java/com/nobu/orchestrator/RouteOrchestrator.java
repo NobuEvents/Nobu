@@ -4,6 +4,7 @@ import com.nobu.spi.connect.Connector;
 import com.nobu.connect.ConnectorFactory;
 import com.nobu.queue.EventQueue;
 import com.nobu.queue.EventQueueFactory;
+import com.nobu.queue.ValidationEventHandler;
 import com.nobu.route.RouteFactory;
 import io.quarkus.runtime.Startup;
 import java.util.Optional;
@@ -33,6 +34,9 @@ public class RouteOrchestrator {
   @Inject
   ConnectorFactory connectorFactory;
 
+  @Inject
+  ValidationEventHandler validationHandler;
+
   @PostConstruct
   public void initialize() {
     LOG.info("Initializing Route Scheduler");
@@ -60,6 +64,9 @@ public class RouteOrchestrator {
       if (eventQueueFactory.get(route.getId()) == null) {
         var queue = new EventQueue(route.getId());
         eventQueueFactory.put(route.getId(), queue);
+        
+        // Add validation handler as first handler (validates before routing)
+        queue.addHandle(validationHandler);
       }
 
       LOG.info("Registering Connection Handler for route: " + route);

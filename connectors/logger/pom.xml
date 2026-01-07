@@ -9,7 +9,6 @@
     </parent>
     <artifactId>logger</artifactId>
     <packaging>jar</packaging>
-    <version>${project.parent.version}</version>
     <name>Simple Logger Connector</name>
 
     <dependencies>

@@ -3,6 +3,7 @@ package com.nobu.connect.kafka;
 import com.nobu.spi.connect.Connector;
 import com.nobu.spi.connect.Context;
 import com.nobu.spi.event.NobuEvent;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -10,11 +11,14 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
+import org.jboss.logging.Logger;
 
 import static org.apache.kafka.clients.producer.ProducerConfig.*;
 
 
 public class KafkaConnector implements Connector {
+
+  private static final Logger LOG = Logger.getLogger(KafkaConnector.class);
 
   public static final String TOPIC = "topic";
   public static final String SEND_HEADERS = "send_headers";
@@ -80,20 +84,44 @@ public class KafkaConnector implements Connector {
     ProducerRecord<String, byte[]> record;
     if (sendHeaders) {
       List<Header> headers = new ArrayList<>();
-      headers.add(new RecordHeader("type", event.getEventName().getBytes()));
-      headers.add(new RecordHeader("schema", event.getSrn().getBytes()));
-      headers.add(new RecordHeader("timestamp", event.getTimestamp().toString().getBytes()));
-      headers.add(new RecordHeader("host", event.getHost().getBytes()));
-      headers.add(new RecordHeader("offset", event.getEventId().getBytes()));
-      headers.add(new RecordHeader("sequence", String.valueOf(sequence).getBytes()));
+      
+      // Add headers with null safety and consistent UTF-8 encoding
+      if (event.getEventName() != null) {
+        headers.add(new RecordHeader("type", event.getEventName().getBytes(StandardCharsets.UTF_8)));
+      }
+      if (event.getSrn() != null) {
+        headers.add(new RecordHeader("schema", event.getSrn().getBytes(StandardCharsets.UTF_8)));
+      }
+      if (event.getTimestamp() != null) {
+        headers.add(new RecordHeader("timestamp", event.getTimestamp().toString().getBytes(StandardCharsets.UTF_8)));
+      }
+      if (event.getHost() != null) {
+        headers.add(new RecordHeader("host", event.getHost().getBytes(StandardCharsets.UTF_8)));
+      }
+      if (event.getEventId() != null) {
+        headers.add(new RecordHeader("eventId", event.getEventId().getBytes(StandardCharsets.UTF_8)));
+      }
+      headers.add(new RecordHeader("sequence", String.valueOf(sequence).getBytes(StandardCharsets.UTF_8)));
+      
       record = new ProducerRecord<>(getTopic(), null, event.getEventName(), event.getMessage(), headers);
     } else {
       record = new ProducerRecord<>(getTopic(), event.getMessage());
     }
     records.add(record);
+    
     if (endOfBatch) {
-      records.forEach(producer::send);
-      producer.flush();
+      // Send all records asynchronously
+      records.forEach(rec -> {
+        producer.send(rec, (metadata, exception) -> {
+          if (exception != null) {
+            LOG.error("Failed to send record to Kafka", exception);
+            // Could route to DLQ here
+          }
+        });
+      });
+      
+      // Don't flush - let Kafka producer handle batching
+      // The producer will automatically batch based on linger.ms config
       records.clear();
     }
   }

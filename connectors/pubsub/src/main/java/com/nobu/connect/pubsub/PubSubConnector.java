@@ -1,11 +1,15 @@
 package com.nobu.connect.pubsub;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
 import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.pubsub.v1.Publisher;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
@@ -92,12 +96,39 @@ public class PubSubConnector implements Connector {
         .setData(ByteString.copyFrom(nobuEvent.getMessage()))
         .putAttributes("type", nobuEvent.getEventName())
         .putAttributes("schema", nobuEvent.getSrn() == null ? "" : nobuEvent.getSrn())
-        .putAttributes("timestamp", nobuEvent.getTimestamp() == null ? "" : nobuEvent.getTimestamp().toString())
+        .putAttributes("timestamp", nobuEvent.getTimestamp() == null ? "" : 
+            nobuEvent.getTimestamp().toString())
         .putAttributes("host", nobuEvent.getHost() == null ? "" : nobuEvent.getHost())
         .putAttributes("offset", nobuEvent.getEventId() == null ? "" : nobuEvent.getEventId())
         .putAttributes("sequence", String.valueOf(sequence))
         .build();
-    publisher.publish(pubsubMessage);
+    
+    // Async publish - non-blocking
+    ApiFuture<String> future = publisher.publish(pubsubMessage);
+    
+    // Add callback for error handling (optional, but recommended)
+    // Handle null future gracefully (shouldn't happen in production, but defensive programming)
+    if (future != null) {
+      ApiFutures.addCallback(future, new ApiFutureCallback<String>() {
+        @Override
+        public void onSuccess(String messageId) {
+          // Success - could log metrics here
+        }
+        
+        @Override
+        public void onFailure(Throwable exception) {
+          LOG.error("Failed to publish message to PubSub", exception);
+          // Could route to DLQ or retry queue here
+        }
+      }, MoreExecutors.directExecutor());
+    }
+    
+    // Note: If endOfBatch, we might want to wait for all pending publishes
+    // But this should be done asynchronously, not blocking the handler thread
+    if (endOfBatch) {
+      // Optionally flush outstanding messages asynchronously
+      publisher.publishAllOutstanding();
+    }
   }
 
   @Override

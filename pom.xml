@@ -14,7 +14,8 @@
     <module>spi</module>
     <module>connectors/console</module>
     <module>connectors/pubsub</module>
-      <module>connectors/logger</module>
+    <module>connectors/logger</module>
+    <module>lakehouse</module>
   </modules>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
@@ -145,11 +146,6 @@
           <configuration>
             <source>${maven.compiler.source}</source>
             <target>${maven.compiler.target}</target>
-            <!--<compilerArgs>
-                <arg>-parameters</arg>
-                <arg>&#45;&#45;add-modules=jdk.incubator.concurrent</arg>
-                <arg>&#45;&#45;enable-preview</arg>
-            </compilerArgs>-->
           </configuration>
         </plugin>
         <plugin>

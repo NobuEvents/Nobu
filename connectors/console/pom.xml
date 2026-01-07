@@ -12,7 +12,6 @@
 
   <artifactId>console</artifactId>
   <packaging>jar</packaging>
-  <version>${project.parent.version}</version>
   <name>Simple Console Connector</name>
 
   <properties>

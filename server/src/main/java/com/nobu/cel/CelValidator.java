@@ -24,6 +24,13 @@ public class CelValidator implements Predicate<NobuEvent> {
     @Inject
     SchemaLoader schemaLoader;
 
+    // Inject singleton ObjectMapper (Quarkus provides this)
+    @Inject
+    ObjectMapper objectMapper;
+
+    private static final TypeReference<HashMap<String, Object>> TYPE_REF = 
+        new TypeReference<>() {};
+
     /***
      * Execute the CEL script for the schema
      * @param event The event to be validated
@@ -32,11 +39,9 @@ public class CelValidator implements Predicate<NobuEvent> {
     @Override
     public boolean test(NobuEvent event) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {
-
-            };
-            Map<String, Object> map = mapper.readValue(event.getMessage(), typeRef);
+            // Reuse singleton ObjectMapper
+            Map<String, Object> map = objectMapper.readValue(
+                event.getMessage(), TYPE_REF);
             var scripts = schemaLoader.getCelManager().getScript(event.getSrn());
 
             int trueCount = 0;

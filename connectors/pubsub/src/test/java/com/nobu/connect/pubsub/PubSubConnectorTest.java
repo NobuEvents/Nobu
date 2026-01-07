@@ -1,5 +1,6 @@
 package com.nobu.connect.pubsub;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
@@ -20,8 +21,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -58,6 +61,16 @@ public class PubSubConnectorTest {
   @Test
   void onEvent()
       throws Exception {
+    // Mock the publish method to return a non-null ApiFuture
+    @SuppressWarnings("unchecked")
+    ApiFuture<String> mockFuture = org.mockito.Mockito.mock(ApiFuture.class);
+    when(publisher.publish(any(PubsubMessage.class))).thenReturn(mockFuture);
+    
+    // Use reflection to set the private publisher field since @InjectMocks can't inject into private fields
+    java.lang.reflect.Field publisherField = PubSubConnector.class.getDeclaredField("publisher");
+    publisherField.setAccessible(true);
+    publisherField.set(pubSubConnector, publisher);
+    
     NobuEvent nobuEvent = new NobuEvent();
     nobuEvent.setEventName("type1");
     nobuEvent.setMessage("message1".getBytes());
@@ -79,6 +92,11 @@ public class PubSubConnectorTest {
   @Test
   void shutdown()
       throws Exception {
+    // Use reflection to set the private publisher field
+    java.lang.reflect.Field publisherField = PubSubConnector.class.getDeclaredField("publisher");
+    publisherField.setAccessible(true);
+    publisherField.set(pubSubConnector, publisher);
+    
     pubSubConnector.shutdown();
 
     verify(publisher, times(1)).publishAllOutstanding();
@@ -88,6 +106,11 @@ public class PubSubConnectorTest {
   @Test
   void shutdownThrowsException()
       throws Exception {
+    // Use reflection to set the private publisher field
+    java.lang.reflect.Field publisherField = PubSubConnector.class.getDeclaredField("publisher");
+    publisherField.setAccessible(true);
+    publisherField.set(pubSubConnector, publisher);
+    
     try {
       pubSubConnector.shutdown();
     } catch (RuntimeException e) {
