@@ -7,19 +7,31 @@
         <groupId>com.nobustream</groupId>
         <artifactId>lakehouse</artifactId>
         <version>1.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>iceberg</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.nobustream</groupId>
+            <artifactId>spi</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler-plugin.version}</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.4.1</version>
                 <configuration>
-                    <skipIfEmpty>true</skipIfEmpty>
-                    <forceCreation>false</forceCreation>
+                    <forceCreation>true</forceCreation>
                 </configuration>
             </plugin>
         </plugins>
