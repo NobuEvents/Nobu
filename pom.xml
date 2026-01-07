@@ -10,12 +10,7 @@
   <modules>
     <module>server</module>
     <module>connectors</module>
-    <module>connectors/kafka</module>
     <module>spi</module>
-    <module>connectors/console</module>
-    <module>connectors/pubsub</module>
-    <module>connectors/logger</module>
-    <module>lakehouse</module>
   </modules>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
