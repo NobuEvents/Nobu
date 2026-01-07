@@ -11,5 +11,18 @@
 
     <artifactId>iceberg</artifactId>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <skipIfEmpty>true</skipIfEmpty>
+                    <forceCreation>false</forceCreation>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
