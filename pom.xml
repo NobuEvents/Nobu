@@ -8,9 +8,13 @@
   <packaging>pom</packaging>
   <version>1.0</version>
   <modules>
+    <module>spi</module>
     <module>server</module>
     <module>connectors</module>
-    <module>spi</module>
+    <module>connectors/kafka</module>
+    <module>connectors/console</module>
+    <module>connectors/pubsub</module>
+      <module>connectors/logger</module>
   </modules>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
@@ -39,6 +43,33 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- Local project modules -->
+      <dependency>
+        <groupId>com.nobustream</groupId>
+        <artifactId>spi</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.nobustream</groupId>
+        <artifactId>kafka</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.nobustream</groupId>
+        <artifactId>console</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.nobustream</groupId>
+        <artifactId>pubsub</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.nobustream</groupId>
+        <artifactId>logger</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
       <dependency>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>${quarkus.platform.artifact-id}</artifactId>

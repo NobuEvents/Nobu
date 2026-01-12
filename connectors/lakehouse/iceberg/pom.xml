@@ -12,11 +12,56 @@
 
     <artifactId>iceberg</artifactId>
 
+    <properties>
+        <iceberg.version>1.4.2</iceberg.version>
+        <hadoop.version>3.3.4</hadoop.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.nobustream</groupId>
             <artifactId>spi</artifactId>
             <version>1.0</version>
+        </dependency>
+        
+        <!-- Apache Iceberg Core -->
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-core</artifactId>
+            <version>${iceberg.version}</version>
+        </dependency>
+        
+        <!-- Apache Iceberg Parquet -->
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-parquet</artifactId>
+            <version>${iceberg.version}</version>
+        </dependency>
+        
+        <!-- Apache Iceberg Hadoop Runtime -->
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-hadoop-runtime</artifactId>
+            <version>${iceberg.version}</version>
+        </dependency>
+        
+        <!-- Hadoop Common (required for Iceberg) -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        
+        <!-- Jackson for JSON parsing -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
         </dependency>
     </dependencies>
 
@@ -38,3 +83,5 @@
     </build>
 
 </project>
+
+

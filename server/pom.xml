@@ -1,9 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>nobu</artifactId>
     <groupId>com.nobustream</groupId>
     <version>1.0</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   <packaging>jar</packaging>
   <modelVersion>4.0.0</modelVersion>
@@ -15,7 +16,6 @@
     <dependency>
       <groupId>com.nobustream</groupId>
       <artifactId>spi</artifactId>
-      <version>${project.parent.version}</version>
     </dependency>
 
     <!-- Start of Nobu Connection Dependencies -->
@@ -23,25 +23,21 @@
     <dependency>
       <groupId>com.nobustream</groupId>
       <artifactId>kafka</artifactId>
-      <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.nobustream</groupId>
       <artifactId>console</artifactId>
-      <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.nobustream</groupId>
       <artifactId>pubsub</artifactId>
-      <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.nobustream</groupId>
       <artifactId>logger</artifactId>
-      <version>${project.parent.version}</version>
     </dependency>
 
     <!-- End of Nobu Connection Dependencies -->
@@ -157,6 +153,9 @@
       <plugin>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>
+        <configuration>
+          <skip>false</skip>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -165,6 +164,15 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
+        <configuration>
+          <systemPropertyVariables>
+            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+            <maven.home>${maven.home}</maven.home>
+          </systemPropertyVariables>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
+        </configuration>
       </plugin>
     </plugins>
   </build>
