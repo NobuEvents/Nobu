@@ -1,7 +1,7 @@
 package com.nobu.server;
 
+import com.lmax.disruptor.InsufficientCapacityException;
 import com.lmax.disruptor.RingBuffer;
-import com.nobu.cel.CelValidator;
 import com.nobu.spi.event.NobuEvent;
 import com.nobu.queue.EventQueue;
 import com.nobu.queue.EventQueueFactory;
@@ -15,6 +15,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 
 
@@ -28,9 +29,6 @@ public class NobuServer {
   @Inject
   EventQueueFactory eventQueueFactory;
 
-  @Inject
-  CelValidator celValidator;
-
   public static final String DLQ_TYPE_NAME = "dlq";
 
   @PostConstruct
@@ -41,35 +39,44 @@ public class NobuServer {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public String event(NobuEvent event) {
-
-    EventQueue eventQueue = getEventQueue(event);
-
+  public Response event(NobuEvent event) {
+    EventQueue eventQueue = eventQueueFactory.get(event.getEventName());
+    
     if (eventQueue == null) {
       LOG.error("No EventQueue queue for type " + event.getEventName());
-      return "error";
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity("error").build();
     }
-
+    
     RingBuffer<NobuEvent> ringBuffer = eventQueue.getRingBuffer();
-    long sequence = ringBuffer.next();
+    
+    // Use tryNext() with timeout for backpressure handling
+    long timeout = 100; // milliseconds
+    long startTime = System.currentTimeMillis();
+    long sequence;
+    
+    while (true) {
+      try {
+        sequence = ringBuffer.tryNext();
+        break; // Successfully got sequence
+      } catch (InsufficientCapacityException e) {
+        // Buffer is full, check timeout
+        if (System.currentTimeMillis() - startTime > timeout) {
+          return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+              .entity("Service temporarily unavailable").build();
+        }
+        Thread.yield(); // Brief yield before retry
+      }
+    }
+    
     try {
       NobuEvent nobuEvent = ringBuffer.get(sequence);
       nobuEvent.deepCopy(event);
     } finally {
       ringBuffer.publish(sequence);
     }
-    return "ok";
-  }
-
-  private EventQueue getEventQueue(NobuEvent event) {
-
-    if (event.getSrn() != null && !celValidator.test(event)) {
-      LOG.warn("CEL validation failed for event type " + event.getEventName() +
-          " and event schema " + event.getSrn());
-      return eventQueueFactory.get(DLQ_TYPE_NAME);
-    } else {
-      return eventQueueFactory.get(event.getEventName());
-    }
+    
+    return Response.ok("ok").build();
   }
 
   public static void main(String... args) {

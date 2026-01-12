@@ -7,10 +7,16 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>connectors</artifactId>
-  <version>${project.parent.version}</version>
   <packaging>pom</packaging>
   <name>Connectors</name>
   <description>Parent Module for List of Connectors</description>
+  <modules>
+    <module>kafka</module>
+    <module>console</module>
+    <module>pubsub</module>
+    <module>logger</module>
+    <module>lakehouse</module>
+  </modules>
   <dependencyManagement>
     <dependencies>
       <dependency>

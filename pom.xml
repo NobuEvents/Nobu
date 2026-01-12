@@ -172,11 +172,6 @@
           <configuration>
             <source>${maven.compiler.source}</source>
             <target>${maven.compiler.target}</target>
-            <!--<compilerArgs>
-                <arg>-parameters</arg>
-                <arg>&#45;&#45;add-modules=jdk.incubator.concurrent</arg>
-                <arg>&#45;&#45;enable-preview</arg>
-            </compilerArgs>-->
           </configuration>
         </plugin>
         <plugin>
