@@ -38,18 +38,29 @@
             <version>${iceberg.version}</version>
         </dependency>
         
-        <!-- Apache Iceberg Hadoop Runtime -->
+        <!-- Apache Parquet Common (required for Parquet schema MessageType) -->
         <dependency>
-            <groupId>org.apache.iceberg</groupId>
-            <artifactId>iceberg-hadoop-runtime</artifactId>
-            <version>${iceberg.version}</version>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-common</artifactId>
+            <version>1.13.1</version>
         </dependency>
         
-        <!-- Hadoop Common (required for Iceberg) -->
+        <!-- Hadoop Common (required for HadoopCatalog) -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>${hadoop.version}</version>
+            <exclusions>
+                <!-- Exclude conflicting logging dependencies -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         
         <!-- Jackson for JSON parsing -->
@@ -83,5 +94,3 @@
     </build>
 
 </project>
-
-

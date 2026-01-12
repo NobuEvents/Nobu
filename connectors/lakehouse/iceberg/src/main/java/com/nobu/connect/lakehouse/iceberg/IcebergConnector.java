@@ -10,7 +10,6 @@ import org.apache.iceberg.*;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.GenericRecord;
-import org.apache.iceberg.data.GenericParquetWriter;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.io.FileAppender;
@@ -152,14 +151,8 @@ public class IcebergConnector implements Connector {
                 }
             }
             
-            // Close all tables
-            for (Table table : tableCache.values()) {
-                try {
-                    table.close();
-                } catch (Exception e) {
-                    LOG.warn("Error closing table", e);
-                }
-            }
+            // Tables don't need explicit closing in Iceberg
+            // The catalog manages table lifecycle
             
             tableCache.clear();
             schemaCache.clear();
@@ -368,11 +361,11 @@ public class IcebergConnector implements Connector {
      * Create Iceberg field from type string
      */
     private Types.NestedField createIcebergField(String name, String type, boolean optional) {
-        Types.NestedField.Builder builder = optional ? 
-            Types.NestedField.optional(Integer.MAX_VALUE, name, getIcebergType(type)) :
-            Types.NestedField.required(Integer.MAX_VALUE, name, getIcebergType(type));
-        
-        return builder.build();
+        if (optional) {
+            return Types.NestedField.optional(Integer.MAX_VALUE, name, getIcebergType(type));
+        } else {
+            return Types.NestedField.required(Integer.MAX_VALUE, name, getIcebergType(type));
+        }
     }
 
     /**
@@ -425,7 +418,7 @@ public class IcebergConnector implements Connector {
             if (!fieldName.startsWith("_")) { // Skip metadata fields
                 JsonNode value = jsonNode.get(fieldName);
                 if (value != null && !value.isNull()) {
-                    record.set(fieldName, convertJsonValue(value, column.type()));
+                    record.set(column.fieldId(), convertJsonValue(value, column.type()));
                 }
             }
         });
@@ -507,17 +500,21 @@ public class IcebergConnector implements Connector {
      * Add metadata fields to record
      */
     private void addMetadataFields(Record record, NobuEvent event, org.apache.iceberg.Schema schema) {
-        if (schema.findField("_event_id") != null) {
-            record.set("_event_id", event.getEventId());
+        Types.NestedField eventIdField = schema.findField("_event_id");
+        if (eventIdField != null) {
+            record.set(eventIdField.fieldId(), event.getEventId());
         }
-        if (schema.findField("_timestamp") != null) {
-            record.set("_timestamp", event.getTimestamp());
+        Types.NestedField timestampField = schema.findField("_timestamp");
+        if (timestampField != null) {
+            record.set(timestampField.fieldId(), event.getTimestamp());
         }
-        if (schema.findField("_host") != null) {
-            record.set("_host", event.getHost());
+        Types.NestedField hostField = schema.findField("_host");
+        if (hostField != null) {
+            record.set(hostField.fieldId(), event.getHost());
         }
-        if (schema.findField("_srn") != null) {
-            record.set("_srn", event.getSrn());
+        Types.NestedField srnField = schema.findField("_srn");
+        if (srnField != null) {
+            record.set(srnField.fieldId(), event.getSrn());
         }
     }
 
@@ -540,9 +537,9 @@ public class IcebergConnector implements Connector {
             OutputFile outputFile = table.io().newOutputFile(filePath);
             
             // Write records using Parquet FileAppender
+            // Use the default Parquet writer for GenericRecord
             try (FileAppender<Record> appender = Parquet.write(outputFile)
                     .schema(table.schema())
-                    .createWriterFunc(GenericParquetWriter::buildWriter)
                     .build()) {
                 
                 for (Record record : batch) {
