@@ -65,6 +65,16 @@
         <artifactId>logger</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.nobustream</groupId>
+        <artifactId>server</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.nobustream</groupId>
+        <artifactId>sap</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       
       <dependency>
         <groupId>${quarkus.platform.group-id}</groupId>
@@ -154,6 +164,23 @@
         <artifactId>docker-java-core</artifactId>
         <version>${docker.java}</version>
         <scope>test</scope>
+      </dependency>
+
+      <!-- Micrometer for metrics -->
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-core</artifactId>
+        <version>1.11.5</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-registry-jmx</artifactId>
+        <version>1.11.5</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-registry-simple</artifactId>
+        <version>1.11.5</version>
       </dependency>
 
     </dependencies>

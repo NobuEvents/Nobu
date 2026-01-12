@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.nobustream</groupId>
+        <artifactId>nobu</artifactId>
+        <version>1.0</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>sap</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <!-- SAP HANA JDBC driver version - Note: This must be installed manually to local Maven repo -->
+        <!-- Download from: https://tools.hana.ondemand.com/#hanatools -->
+        <!-- Install with: mvn install:install-file -Dfile=ngdbc.jar -DgroupId=com.sap.cloud.db.jdbc -DartifactId=ngdbc -Dversion=2.19.24 -Dpackaging=jar -->
+        <sap.hana.jdbc.version>2.19.24</sap.hana.jdbc.version>
+        <hikaricp.version>5.1.0</hikaricp.version>
+        <rocksdb.version>8.11.3</rocksdb.version>
+    </properties>
+
+    <dependencies>
+        <!-- Nobu SPI -->
+        <dependency>
+            <groupId>com.nobustream</groupId>
+            <artifactId>spi</artifactId>
+        </dependency>
+        
+        <!-- Server module for EventQueueFactory access -->
+        <dependency>
+            <groupId>com.nobustream</groupId>
+            <artifactId>server</artifactId>
+        </dependency>
+
+        <!-- Common dependencies -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+        
+        <!-- LMDB for transaction state storage -->
+        <dependency>
+            <groupId>org.lmdbjava</groupId>
+            <artifactId>lmdbjava</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+
+        <!-- Caffeine for high-performance caching -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.1.8</version>
+        </dependency>
+
+        <!-- Metrics with JMX - Using standard Micrometer JMX registry -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-jmx</artifactId>
+        </dependency>
+
+        <!-- JDBC dependencies - COMMENTED OUT until SAP JDBC driver is installed -->
+        <!-- SAP HANA JDBC Driver - Must be installed manually to local Maven repo -->
+        <!-- Download from SAP: https://tools.hana.ondemand.com/#hanatools -->
+        <!-- Then install: mvn install:install-file -Dfile=ngdbc.jar -DgroupId=com.sap.cloud.db.jdbc -DartifactId=ngdbc -Dversion=2.19.24 -Dpackaging=jar -->
+        <!--
+        <dependency>
+            <groupId>com.sap.cloud.db.jdbc</groupId>
+            <artifactId>ngdbc</artifactId>
+            <version>${sap.hana.jdbc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikaricp.version}</version>
+        </dependency>
+        -->
+
+        <!-- REST/OData dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client-reactive</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client-reactive-jackson</artifactId>
+        </dependency>
+        <!-- Note: Using java.net.http.HttpClient (built-in Java 11+) instead of httpclient5 -->
+        
+        <!-- OAuth2 - Using java.net.http.HttpClient (built-in) for token management -->
+        <!-- No additional JWT dependencies needed -->
+
+        <!-- Quarkus Scheduler for polling -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-scheduler</artifactId>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler-plugin.version}</version>
+                <configuration>
+                    <!-- Exclude JDBC implementation from compilation until SAP JDBC driver is installed -->
+                    <excludes>
+                        <exclude>**/jdbc/*.java</exclude>
+                    </excludes>
+                    <!-- Also exclude JDBC tests from test compilation -->
+                    <testExcludes>
+                        <testExclude>**/jdbc/*Test.java</testExclude>
+                    </testExcludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <forceCreation>true</forceCreation>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Exclude JDBC tests from compilation -->
+                    <excludes>
+                        <exclude>**/jdbc/*Test.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

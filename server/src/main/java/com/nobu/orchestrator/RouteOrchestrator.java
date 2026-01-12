@@ -37,6 +37,9 @@ public class RouteOrchestrator {
   @Inject
   ValidationEventHandler validationHandler;
 
+  @Inject
+  SourceConnectorManager sourceConnectorManager;
+
   @PostConstruct
   public void initialize() {
     LOG.info("Initializing Route Scheduler");
@@ -45,11 +48,19 @@ public class RouteOrchestrator {
     routeFactory = RouteFactory.get(configFile);
     routeFactory.validateRouteConfig();
     startEventQueue(routeFactory);
+    
+    // Initialize and start source connectors
+    sourceConnectorManager.initialize(routeFactory);
+    sourceConnectorManager.start();
   }
 
   @PreDestroy
   public void terminate() {
     LOG.info("Terminating Route Scheduler");
+    
+    // Stop source connectors
+    sourceConnectorManager.stop();
+    
     eventQueueFactory.terminate();
   }
 

@@ -62,3 +62,53 @@ routes:
   - id: onboard
     target: console_main
 
+# Source connectors - poll external systems and inject events into Nobu
+sources:
+  # JDBC-based SAP CDC connector
+  sap_cdc_jdbc:
+    type: sap-cdc-jdbc
+    impl: com.nobu.connect.sap.jdbc.JdbcSapCdcConnector
+    config:
+      jdbc.url: jdbc:sap://hana-host:30015
+      jdbc.user: ${SAP_USER}
+      jdbc.password: ${SAP_PASSWORD}
+      cdc.table: attrep_cdc_changes
+      poll.interval.seconds: 900
+      connection.pool.size: 10
+      transaction.memory.limit.mb: 1024
+      transaction.duration.limit.seconds: 60
+      storage.path: /var/nobu/sap-transactions
+      join.enabled: true
+      host: sap-hana-prod
+
+  # REST API-based SAP CDC connector
+  sap_cdc_rest:
+    type: sap-cdc-rest
+    impl: com.nobu.connect.sap.rest.RestSapCdcConnector
+    config:
+      rest.base.url: https://sap-host:443/sap/opu/odata
+      rest.service: ChangeDataCaptureService
+      rest.entity.set: ChangeLogs
+      auth.type: oauth2
+      oauth2.token.url: https://sap-host/oauth/token
+      oauth2.client.id: ${SAP_CLIENT_ID}
+      oauth2.client.secret: ${SAP_CLIENT_SECRET}
+      poll.interval.seconds: 900
+      page.size: 1000
+      transaction.memory.limit.mb: 1024
+      transaction.duration.limit.seconds: 60
+      host: sap-rest-api
+
+  # SAP Data Services-based CDC connector
+  sap_cdc_ds:
+    type: sap-cdc-dataservices
+    impl: com.nobu.connect.sap.dataservices.DataServicesSapCdcConnector
+    config:
+      ds.server.url: https://ds-server:8443
+      ds.subscription.name: NOBU_CDC_SUBSCRIPTION
+      ds.replication.stream: SAP_TO_NOBU
+      mode: pull
+      batch.size: 1000
+      transaction.memory.limit.mb: 1024
+      transaction.duration.limit.seconds: 60
+      host: sap-data-services
