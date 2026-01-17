@@ -7,7 +7,6 @@ import javax.annotation.PreDestroy;
 import javax.inject.Singleton;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 @Singleton
 public class EventQueueFactory {
 

@@ -40,6 +40,11 @@
       <artifactId>logger</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.nobustream</groupId>
+      <artifactId>sap</artifactId>
+    </dependency>
+
     <!-- End of Nobu Connection Dependencies -->
 
     <dependency>
