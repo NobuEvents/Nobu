@@ -5,7 +5,8 @@ import java.util.List;
 
 /**
  * Represents the state of a transaction in the CDC pipeline.
- * Tracks transaction lifecycle, associated changes, and memory/storage location.
+ * Tracks transaction lifecycle, associated changes, and memory/storage
+ * location.
  */
 public class TransactionState {
     private String transactionId;
@@ -55,7 +56,7 @@ public class TransactionState {
         // Memory size is now calculated externally by TransactionManager
         // This method is kept for backward compatibility but calculation is done there
     }
-    
+
     /**
      * Update memory size estimate for this transaction.
      * Called by TransactionManager after calculating accurate size.
@@ -88,10 +89,12 @@ public class TransactionState {
         this.storagePath = storagePath;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isInMemory() {
         return storagePath == null;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public long getDuration() {
         return System.currentTimeMillis() - startTime;
     }

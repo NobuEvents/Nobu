@@ -7,8 +7,6 @@ import com.nobu.queue.EventQueueFactory;
 import com.nobu.spi.event.NobuEvent;
 import org.jboss.logging.Logger;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Handles injection of SAP CDC events into Nobu's EventQueue system.
  * Converts ChangeRecords to NobuEvents and publishes them to the appropriate EventQueue.
