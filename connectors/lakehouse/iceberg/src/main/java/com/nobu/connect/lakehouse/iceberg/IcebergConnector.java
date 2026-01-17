@@ -16,10 +16,7 @@ import org.apache.iceberg.types.Types;
 import org.jboss.logging.Logger;
 
 import java.io.IOException;
-// import java.io.InputStream; // Unused
-// import java.net.URI; // Unused
 import java.nio.file.Files;
-// import java.nio.file.Path; // Unused
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,6 +55,10 @@ public class IcebergConnector implements Connector {
     private PrimaryKeyIndex primaryKeyIndex;
     private final Map<String, IcebergTableManager> tableManagers = new ConcurrentHashMap<>();
 
+    // Index Maintenance
+    private final java.util.Queue<IndexUpdateTask> compactionMailbox = new java.util.concurrent.ConcurrentLinkedQueue<>();
+    private final List<IcebergSnapshotMonitor> monitors = new ArrayList<>();
+
     // Buffers and Caches
     private final Map<String, Table> tableCache = new ConcurrentHashMap<>();
     private final Map<String, org.apache.iceberg.Schema> schemaCache = new ConcurrentHashMap<>();
@@ -80,10 +81,10 @@ public class IcebergConnector implements Connector {
             catalog = createCatalog(catalogType, warehousePath, config);
             ensureDirectory(warehousePath);
 
-            // 2. Initialize Moonlink Persistence
-            // We create separate subdirs for WAL and Index
-            String walPath = Paths.get(warehousePath, ".moonlink", "wal").toString();
-            String indexPath = Paths.get(warehousePath, ".moonlink", "index").toString();
+            // 2. Initialize Native Persistence
+            // Use distinct directories for WAL and Index
+            String walPath = Paths.get(warehousePath, ".nobu", "wal").toString();
+            String indexPath = Paths.get(warehousePath, ".nobu", "index").toString();
 
             ensureDirectory(walPath);
             ensureDirectory(indexPath);
@@ -110,6 +111,29 @@ public class IcebergConnector implements Connector {
         }
     }
 
+    private void processCompactionMailbox() {
+        if (compactionMailbox.isEmpty())
+            return;
+
+        long deadline = System.currentTimeMillis() + 10; // 10ms Time Budget
+        int processed = 0;
+
+        while (!compactionMailbox.isEmpty() && System.currentTimeMillis() < deadline) {
+            IndexUpdateTask task = compactionMailbox.poll();
+            if (task != null) {
+                // Apply updates to Index
+                for (Map.Entry<String, RecordLocation> entry : task.getNewMappings().entrySet()) {
+                    primaryKeyIndex.upsert(entry.getKey(), entry.getValue());
+                }
+                processed++;
+            }
+        }
+
+        if (processed > 0) {
+            LOG.debug("Processed " + processed + " compaction tasks from mailbox.");
+        }
+    }
+
     @Override
     public void onEvent(NobuEvent event, long sequence, boolean endOfBatch) throws Exception {
         if (!initialized) {
@@ -121,6 +145,9 @@ public class IcebergConnector implements Connector {
             String tableName = event.getEventName();
             if (tableName == null || tableName.isEmpty())
                 return;
+
+            // 0. Maintenance Check (Time Budgeted)
+            processCompactionMailbox();
 
             // 1. Wal Append (Durability)
             long seqId = bufferManager.append(event);
@@ -148,7 +175,13 @@ public class IcebergConnector implements Connector {
             // Get components
             Table table = getOrCreateTable(tableName, batch.get(0).getSrn(), batch.get(0));
             IcebergTableManager manager = tableManagers.computeIfAbsent(tableName,
-                    k -> new IcebergTableManager(table, primaryKeyIndex));
+                    k -> {
+                        // Start a monitor for this table
+                        IcebergSnapshotMonitor monitor = new IcebergSnapshotMonitor(table, compactionMailbox);
+                        monitor.start();
+                        monitors.add(monitor);
+                        return new IcebergTableManager(table, primaryKeyIndex);
+                    });
 
             // Commit via Manager (Upserts + Deletes + Appends)
             manager.commitBatch(new ArrayList<>(batch)); // Copy to be safe
@@ -173,9 +206,6 @@ public class IcebergConnector implements Connector {
             // Flush all pending
             for (Map.Entry<String, List<NobuEvent>> entry : batchBuffer.entrySet()) {
                 if (!entry.getValue().isEmpty()) {
-                    // Use a conservative seqId (max long) or track it properly.
-                    // For now, we assume flushBatch works.
-                    // Ideally we'd track maxSeqId per batch.
                     flushBatch(entry.getKey(), entry.getValue(), Long.MAX_VALUE);
                 }
             }
@@ -188,6 +218,9 @@ public class IcebergConnector implements Connector {
             tableCache.clear();
             batchBuffer.clear();
             tableManagers.clear();
+            for (IcebergSnapshotMonitor m : monitors)
+                m.close();
+            monitors.clear();
             initialized = false;
         } catch (Exception e) {
             LOG.error("Error during shutdown", e);
@@ -234,10 +267,6 @@ public class IcebergConnector implements Connector {
 
     private org.apache.iceberg.Schema getOrLoadSchema(String tableName, String srn, NobuEvent event) {
         try {
-            if (srn != null && !srn.isEmpty()) {
-                // Try Loading from SRN (Simplified from original)
-                // For brevity, defaulting to inference if SRN load fails or logic complex
-            }
             JsonNode node = objectMapper.readTree(event.getMessage());
             return inferSchemaFromJson(node);
         } catch (Exception e) {
