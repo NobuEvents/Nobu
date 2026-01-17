@@ -2,6 +2,8 @@ package com.nobu.connect.lakehouse.iceberg;
 
 import org.apache.iceberg.*;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.parquet.Parquet;
+import org.apache.iceberg.data.parquet.GenericParquetReaders;
 import org.jboss.logging.Logger;
 
 import java.io.Closeable;
@@ -10,7 +12,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -82,8 +83,6 @@ public class IcebergSnapshotMonitor implements Closeable {
     private boolean isCompaction(Snapshot snapshot) {
         String op = snapshot.operation();
         return DataOperations.REPLACE.equals(op);
-        // Note: DELETE or OVERWRITE might also be relevant depending on implementation,
-        // but REPLACE is the standard for RewriteDataFiles.
     }
 
     private void processCompaction(Snapshot snapshot) {
@@ -102,11 +101,7 @@ public class IcebergSnapshotMonitor implements Closeable {
             return;
         }
 
-        // 2. Scan Added Files (Metadata Projection)
-        // We only need to scan the PrimaryKey column from the new files to rebuild the
-        // index.
-        // This is much faster than reading full rows.
-
+        // 2. Scan Added Files
         Iterable<DataFile> addedFiles = snapshot.addedDataFiles(table.io());
         for (DataFile file : addedFiles) {
             scanFileForKeys(file, newMappings);
@@ -121,27 +116,30 @@ public class IcebergSnapshotMonitor implements Closeable {
     }
 
     private void scanFileForKeys(DataFile file, Map<String, RecordLocation> newMappings) {
-        try (CloseableIterable<org.apache.iceberg.data.Record> reader = org.apache.iceberg.data.IcebergGenerics
+        // Use Parquet.read directly to scan the specific added file.
+        // This bypasses IcebergGenerics table scan which is inefficient for this
+        // purpose.
+        try (CloseableIterable<org.apache.iceberg.data.Record> reader = Parquet
                 .read(table.io().newInputFile(file.path().toString()))
-                .select("id", "key", "_id") // Select potential PK columns
+                .project(table.schema())
+                .createReaderFunc(fileSchema -> GenericParquetReaders.buildReader(table.schema(), fileSchema))
                 .build()) {
 
             long rowId = 0;
             for (org.apache.iceberg.data.Record record : reader) {
                 String key = extractKeyFromRecord(record);
                 if (key != null) {
-                    // Update mapping to point to the NEW file and NEW rowId
                     newMappings.put(key, new RecordLocation(file.path().toString(), rowId));
                 }
                 rowId++;
             }
-        } catch (Exception e) {
-            LOG.error("Failed to scan compacted file: " + file.path(), e);
+
+        } catch (Throwable t) {
+            LOG.error("Failed to scan compacted file: " + file.path(), t);
         }
     }
 
     private String extractKeyFromRecord(org.apache.iceberg.data.Record record) {
-        // Simple heuristic matching IcebergTableManager
         if (record.getField("id") != null)
             return record.getField("id").toString();
         if (record.getField("key") != null)
