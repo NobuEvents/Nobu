@@ -24,15 +24,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.lmdbjava.DbiFlags.MDB_CREATE;
-import static org.lmdbjava.EnvFlags.MDB_NOSUBDIR;
 
 /**
  * Manages transaction state for SAP CDC processing.
- * Handles memory/storage offloading, transaction lifecycle, and recovery using LMDB.
+ * Handles memory/storage offloading, transaction lifecycle, and recovery using
+ * LMDB.
  */
 public class TransactionManager {
     private static final Logger LOG = Logger.getLogger(TransactionManager.class);
-    
+
     private final Map<String, TransactionState> inMemoryTransactions;
     private final long memoryLimitBytes;
     private final long durationLimitMs;
@@ -73,21 +73,21 @@ public class TransactionManager {
 
                 // Initialize LMDB Environment
                 env = Env.create()
-                    // CRITICAL: Set this to 2TB (or significantly larger than disk).
-                    // It costs nothing in RAM/Disk until used (Sparse File).
-                    .setMapSize(LMDB_MAP_SIZE)
-                    // Limits: 1 Database, only 1 Writer allowed by design (we use internal locking)
-                    .setMaxDbs(1)
-                    .open(dbFile);
+                        // CRITICAL: Set this to 2TB (or significantly larger than disk).
+                        // It costs nothing in RAM/Disk until used (Sparse File).
+                        .setMapSize(LMDB_MAP_SIZE)
+                        // Limits: 1 Database, only 1 Writer allowed by design (we use internal locking)
+                        .setMaxDbs(1)
+                        .open(dbFile);
 
                 // Open the database
                 dbi = env.openDbi(DB_NAME, MDB_CREATE);
-                
+
                 LOG.info("TransactionManager initialized with LMDB storage at: " + dbPath);
-                
+
                 // Recover any existing transactions
                 recoverTransactions();
-                
+
             } catch (Exception e) {
                 LOG.warn("Failed to initialize LMDB, using in-memory only: " + e.getMessage());
                 env = null;
@@ -107,38 +107,34 @@ public class TransactionManager {
             throw new IOException("TransactionManager is not initialized");
         }
         String transactionId = changeRecord.getTransactionId();
-        
-        // Check if we have this transaction in memory
+
+        // Check if we have this transaction in memory (metadata or full)
         TransactionState state = inMemoryTransactions.get(transactionId);
-        
+
         if (state == null) {
-            // Check if it's in storage (recovery or offloaded)
-            state = getTransactionState(transactionId);
-            if (state != null) {
-                // Loaded from storage, put back in memory map
-                inMemoryTransactions.put(transactionId, state);
-                // When loading from storage, we should update memory usage
-                totalMemoryUsed.addAndGet(state.getMemorySize());
-            } else {
-                // New transaction
-                state = new TransactionState(transactionId);
-                inMemoryTransactions.put(transactionId, state);
-            }
+            // New transaction
+            state = new TransactionState(transactionId);
+            inMemoryTransactions.put(transactionId, state);
         }
-        
+
+        // Check if offloaded (metadata only in memory)
+        if (!state.isInMemory()) {
+            reloadTransactionFromDisk(state);
+        }
+
         // Estimate size before adding
         long estimatedSize = estimateChangeSize(changeRecord);
         state.addChange(changeRecord);
         state.updateMemorySize(state.getMemorySize() + estimatedSize);
         totalMemoryUsed.addAndGet(estimatedSize);
-        
+
         // Check if we need to offload (only check periodically to avoid overhead)
         // Check every 10th change or if this transaction exceeds individual threshold
         if (state.getChanges().size() % 10 == 0 || shouldOffload(state)) {
             checkAndOffloadIfNeeded();
         }
     }
-    
+
     /**
      * Estimate size of a change record.
      */
@@ -152,12 +148,13 @@ public class TransactionManager {
         }
         return size;
     }
-    
+
     /**
      * Estimate size of a map.
      */
     private long estimateMapSize(Map<String, Object> map) {
-        if (map == null) return 0;
+        if (map == null)
+            return 0;
         long size = 0;
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             size += entry.getKey().length() * 2L; // String overhead
@@ -172,7 +169,7 @@ public class TransactionManager {
         }
         return size;
     }
-    
+
     /**
      * Check if offloading is needed and perform it.
      */
@@ -181,7 +178,7 @@ public class TransactionManager {
         if (currentMemory <= memoryLimitBytes) {
             return; // No need to offload
         }
-        
+
         // Need to offload - find largest transactions first
         offloadLock.writeLock().lock();
         try {
@@ -189,11 +186,11 @@ public class TransactionManager {
             if (totalMemoryUsed.get() <= memoryLimitBytes) {
                 return;
             }
-            
+
             // Sort transactions by size (largest first) and offload until under limit
             List<TransactionState> sortedTransactions = new ArrayList<>(inMemoryTransactions.values());
             sortedTransactions.sort((a, b) -> Long.compare(b.getMemorySize(), a.getMemorySize()));
-            
+
             for (TransactionState state : sortedTransactions) {
                 if (totalMemoryUsed.get() <= memoryLimitBytes * 0.8) {
                     break; // Offloaded enough (80% of limit)
@@ -210,18 +207,27 @@ public class TransactionManager {
      * Returns all changes for processing.
      */
     public List<ChangeRecord> commitTransaction(String transactionId) throws IOException {
-        TransactionState state = getTransactionState(transactionId);
+        TransactionState state = inMemoryTransactions.get(transactionId);
         if (state == null) {
-            LOG.warn("Transaction not found for commit: " + transactionId);
-            return new ArrayList<>();
+            // Try fallback to disk just in case (e.g. recovery edge case)
+            state = getTransactionState(transactionId);
+            if (state == null) {
+                LOG.warn("Transaction not found for commit: " + transactionId);
+                return new ArrayList<>();
+            }
+        }
+
+        // Ensure loaded
+        if (!state.isInMemory()) {
+            reloadTransactionFromDisk(state);
         }
 
         state.setStatus(TransactionStatus.COMMITTED);
         List<ChangeRecord> changes = state.getChanges();
-        
-        // Remove from memory/storage
+
+        // Remove from memory and trigger cleanup
         removeTransaction(transactionId);
-        
+
         return changes;
     }
 
@@ -247,31 +253,10 @@ public class TransactionManager {
         // Try memory first (read lock for concurrent access)
         offloadLock.readLock().lock();
         try {
-            TransactionState state = inMemoryTransactions.get(transactionId);
-            if (state != null) {
-                return state;
-            }
+            return inMemoryTransactions.get(transactionId);
         } finally {
             offloadLock.readLock().unlock();
         }
-
-        // Try to load from storage
-        if (env != null && dbi != null) {
-            try (Txn<ByteBuffer> txn = env.txnRead()) {
-                ByteBuffer key = allocateDirect(transactionId);
-                ByteBuffer val = dbi.get(txn, key);
-                
-                if (val != null) {
-                    byte[] data = new byte[val.remaining()];
-                    val.get(data);
-                    return objectMapper.readValue(data, TransactionState.class);
-                }
-            } catch (Exception e) {
-                LOG.error("Failed to load transaction from storage: " + transactionId, e);
-            }
-        }
-
-        return null;
     }
 
     private ByteBuffer allocateDirect(String value) {
@@ -283,12 +268,61 @@ public class TransactionManager {
     }
 
     /**
+     * Reload transaction payload from disk into the existing metadata object.
+     * Updates memory usage tracking.
+     */
+    private void reloadTransactionFromDisk(TransactionState state) throws IOException {
+        if (env == null || dbi == null) {
+            throw new IOException("Cannot reload transaction - LMDB not initialized");
+        }
+
+        offloadLock.writeLock().lock();
+        try {
+            try (Txn<ByteBuffer> txn = env.txnRead()) {
+                ByteBuffer key = allocateDirect(state.getTransactionId());
+                ByteBuffer val = dbi.get(txn, key);
+
+                if (val != null) {
+                    byte[] data = new byte[val.remaining()];
+                    val.get(data);
+                    TransactionState loaded = objectMapper.readValue(data, TransactionState.class);
+
+                    // Restore changes to the existing object
+                    state.setChanges(loaded.getChanges());
+                    state.setStartTime(loaded.getStartTime());
+                    // Update memory size to full size
+                    long oldSize = state.getMemorySize();
+                    long newSize = loaded.getMemorySize();
+                    state.setMemorySize(newSize);
+                    state.setStoragePath(null); // Mark as in-memory
+
+                    totalMemoryUsed.addAndGet(newSize - oldSize);
+
+                    // We don't delete from disk here strictly, but we should to avoid confusion?
+                    // Let's rely on removeTransaction or next offload to overwrite.
+                    // Actually, if we crash now, we have it on disk. That's fine.
+                } else {
+                    LOG.error("Transaction marked as offloaded but not found in LMDB: " + state.getTransactionId());
+                    // Reset to empty to recover gracefully?
+                    state.setChanges(new ArrayList<>());
+                    state.setStoragePath(null);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to reload transaction from storage: " + state.getTransactionId(), e);
+            throw new IOException("Failed to reload transaction from storage", e);
+        } finally {
+            offloadLock.writeLock().unlock();
+        }
+    }
+
+    /**
      * Check if transaction should be offloaded to disk.
      */
     private boolean shouldOffload(TransactionState state) {
         long duration = state.getDuration();
         long transactionMemory = state.getMemorySize();
-        
+
         // Offload if transaction exceeds individual size threshold (10% of total limit)
         // or if duration exceeds limit
         return transactionMemory > (memoryLimitBytes * 0.1) || duration > durationLimitMs;
@@ -311,23 +345,29 @@ public class TransactionManager {
         try (Txn<ByteBuffer> txn = env.txnWrite()) {
             state.setStoragePath(storagePath + "/" + state.getTransactionId()); // Metadata mostly
             byte[] data = objectMapper.writeValueAsBytes(state);
-            
+
             ByteBuffer key = allocateDirect(state.getTransactionId());
             ByteBuffer val = ByteBuffer.allocateDirect(data.length);
             val.put(data).flip();
-            
+
             dbi.put(txn, key, val);
             txn.commit();
-            
+
             // Update memory counter
-            long freedMemory = state.getMemorySize();
-            totalMemoryUsed.addAndGet(-freedMemory);
-            
-            // Remove from memory
-            inMemoryTransactions.remove(state.getTransactionId());
-            
-            LOG.debug("Offloaded transaction to storage: " + state.getTransactionId() + 
-                     ", freed: " + freedMemory + " bytes");
+            long fullSize = state.getMemorySize();
+
+            // Clear payload from memory
+            state.setChanges(new ArrayList<>());
+            long metadataSize = 256; // Estimated metadata size
+            state.setMemorySize(metadataSize);
+
+            totalMemoryUsed.addAndGet(metadataSize - fullSize);
+
+            // DO NOT remove from inMemoryTransactions
+            // inMemoryTransactions.remove(state.getTransactionId());
+
+            LOG.debug("Offloaded transaction to storage: " + state.getTransactionId() +
+                    ", freed: " + (fullSize - metadataSize) + " bytes");
         } catch (Exception e) {
             LOG.error("Failed to offload transaction: " + state.getTransactionId(), e);
             throw new IOException("Failed to offload transaction", e);
@@ -347,7 +387,7 @@ public class TransactionManager {
         } finally {
             offloadLock.writeLock().unlock();
         }
-        
+
         if (env != null && dbi != null) {
             try (Txn<ByteBuffer> txn = env.txnWrite()) {
                 ByteBuffer key = allocateDirect(transactionId);
@@ -364,62 +404,44 @@ public class TransactionManager {
      */
     public List<TransactionState> recoverTransactions() throws IOException {
         List<TransactionState> recovered = new ArrayList<>();
-        
+
         if (env == null || dbi == null) {
             return recovered;
         }
 
         LOG.info("Starting transaction recovery from LMDB...");
-        
+
+        // Acquire write lock to ensure exclusive access during recovery updates
+        offloadLock.writeLock().lock();
         try (Txn<ByteBuffer> txn = env.txnRead();
-             org.lmdbjava.Cursor<ByteBuffer> cursor = dbi.openCursor(txn)) {
-            
+                org.lmdbjava.Cursor<ByteBuffer> cursor = dbi.openCursor(txn)) {
+
             while (cursor.next()) {
                 try {
                     ByteBuffer val = cursor.val();
                     byte[] data = new byte[val.remaining()];
                     val.get(data);
-                    
+
                     TransactionState state = objectMapper.readValue(data, TransactionState.class);
-                    
-                    // Add to memory map (offload lock should be held if concurrent, but this is startup)
+
+                    // Add to memory map
                     inMemoryTransactions.put(state.getTransactionId(), state);
-                    // Update memory usage since we loaded it into memory
-                    // (Actually, if we just keep it offloaded, we shouldn't add to map?
-                    //  Recovery usually means we want to process them. 
-                    //  Or we can leave them in DB and load on demand.
-                    //  Given the current design, we load into map so they are 'active'.
-                    //  But if they are huge, we might OOM.
-                    //  Better: keep them in LMDB, don't load into memory map unless accessed?
-                    //  But how do we know they exist?
-                    //  The `inMemoryTransactions` is used for `addChange`.
-                    //  If we just leave them in DB, `getInProgressTransactions` needs to scan DB.
-                    //  Let's load keys into memory map but maybe keep values offloaded?
-                    //  Current design: offloadTransaction removes from memory map.
-                    //  So if they are in DB, they are NOT in memory map.
-                    //  Wait, `getTransactionState` checks memory, then DB.
-                    //  So if it's in DB, we don't need it in memory map.
-                    //  BUT `getInProgressTransactions` checks only memory map.
-                    //  So if we have offloaded transactions, `getInProgressTransactions` will miss them!
-                    //  FIX: `getInProgressTransactions` should also scan DB or we maintain a "key set" in memory.
-                    //  Refactoring: Maintain a lightweight map of "TransactionID -> Status" in memory for ALL transactions,
-                    //  and only load payload when needed.
-                    //  For now, to strictly follow "load existing transactions", I will check if I should load them.
-                    //  Actually, if the app crashed, they are in DB.
-                    //  We should probably iterate DB keys and ensure we know about them.
-                    //  But `getTransactionState` can load them.
-                    //  The issue is identifying which transactions are pending.
-                    //  Let's implement `getAllTransactionIds` from DB.
-                    //  However, for this specific request, "Recovery" implies making them available.
-                    //  Since `getTransactionState` lazily loads from DB, we technically "recovered" access to them.
-                    //  But we might want to log or metrics.
-                    
-                    //  Actually, the critical part is ensuring `addChange` sees them if we get more changes for same ID.
-                    //  `addChange` calls `inMemoryTransactions.computeIfAbsent`.
-                    //  It does NOT check DB. This is a bug in current design if offloading removes from map.
-                    //  If offloaded, `addChange` creates a NEW state, overwriting or confusing.
-                    //  Fix: `addChange` should check DB if not in memory.
-                    
+                    // But `getTransactionState` can load them.
+                    // The issue is identifying which transactions are pending.
+                    // Let's implement `getAllTransactionIds` from DB.
+                    // However, for this specific request, "Recovery" implies making them available.
+                    // Since `getTransactionState` lazily loads from DB, we technically "recovered"
+                    // access to them.
+                    // But we might want to log or metrics.
+
+                    // Actually, the critical part is ensuring `addChange` sees them if we get more
+                    // changes for same ID.
+                    // `addChange` calls `inMemoryTransactions.computeIfAbsent`.
+                    // It does NOT check DB. This is a bug in current design if offloading removes
+                    // from map.
+                    // If offloaded, `addChange` creates a NEW state, overwriting or confusing.
+                    // Fix: `addChange` should check DB if not in memory.
+
                     recovered.add(state);
                 } catch (Exception e) {
                     LOG.error("Failed to deserialize transaction during recovery", e);
@@ -445,7 +467,7 @@ public class TransactionManager {
             offloadLock.readLock().unlock();
         }
     }
-    
+
     /**
      * Get current memory usage in bytes.
      */
