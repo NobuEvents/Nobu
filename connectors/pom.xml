@@ -16,6 +16,7 @@
     <module>pubsub</module>
     <module>logger</module>
     <module>lakehouse</module>
+    <module>sap</module>
   </modules>
   <dependencyManagement>
     <dependencies>

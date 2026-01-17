@@ -51,9 +51,12 @@ public class SchemaLoader {
             LOG.error("Schema directory not found in config: Switching to no schema validation mode");
         } else {
             LOG.info("Schema directory found in config: " + schemaDir.get());
-            readFilesRecursively(schemaDir.get(), schemaExt.get());
-
-            buildCelScript(schemaDir.get());
+            try {
+                readFilesRecursively(schemaDir.get(), schemaExt.get());
+                buildCelScript(schemaDir.get());
+            } catch (com.nobu.exception.SchemaConfigException e) {
+                LOG.warn("Schema directory not found: " + schemaDir.get() + ". Switching to no schema validation mode", e);
+            }
         }
 
     }
@@ -111,7 +114,7 @@ public class SchemaLoader {
      * @param directoryPath       The path to the directory to read
      * @param fileExtensionFilter The file extension to filter by
      */
-    private void readFilesRecursively(String directoryPath, String fileExtensionFilter) {
+    private void readFilesRecursively(String directoryPath, String fileExtensionFilter) throws com.nobu.exception.SchemaConfigException {
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(SchemaDirReader.getSchemaDirectory(directoryPath))) {
             for (Path path : stream) {

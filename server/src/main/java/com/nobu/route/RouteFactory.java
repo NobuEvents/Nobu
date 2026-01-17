@@ -37,6 +37,17 @@ public class RouteFactory {
         this.connectionMap = connectionMap;
     }
 
+    @JsonProperty("sources")
+    private Map<String, Source> sources;
+
+    public Map<String, Source> getSources() {
+        return sources;
+    }
+
+    public void setSources(Map<String, Source> sources) {
+        this.sources = sources;
+    }
+
     public static class Connection {
         private String type;
         private String impl;
@@ -97,6 +108,36 @@ public class RouteFactory {
             this.config = config;
         }
 
+    }
+
+    public static class Source {
+        private String type;
+        private String impl;
+        private Map<String, String> config;
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getImpl() {
+            return impl;
+        }
+
+        public void setImpl(String impl) {
+            this.impl = impl;
+        }
+
+        public Map<String, String> getConfig() {
+            return config;
+        }
+
+        public void setConfig(Map<String, String> config) {
+            this.config = config;
+        }
     }
 
     @JsonIgnore
