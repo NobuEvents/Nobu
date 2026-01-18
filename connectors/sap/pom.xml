@@ -29,11 +29,7 @@
             <artifactId>spi</artifactId>
         </dependency>
         
-        <!-- Server module for EventQueueFactory access -->
-        <dependency>
-            <groupId>com.nobustream</groupId>
-            <artifactId>server</artifactId>
-        </dependency>
+
 
         <!-- Common dependencies -->
         <dependency>
@@ -79,12 +75,13 @@
             <artifactId>ngdbc</artifactId>
             <version>${sap.hana.jdbc.version}</version>
         </dependency>
+        -->
+
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${hikaricp.version}</version>
         </dependency>
-        -->
 
         <!-- REST/OData dependencies -->
         <dependency>
@@ -126,9 +123,12 @@
                 <version>${compiler-plugin.version}</version>
                 <configuration>
                     <!-- Exclude JDBC implementation from compilation until SAP JDBC driver is installed -->
+                    <!-- Removed exclusion: JDBC code should compile with HikariCP alone -->
+                    <!--
                     <excludes>
                         <exclude>**/jdbc/*.java</exclude>
                     </excludes>
+                    -->
                     <!-- Also exclude JDBC tests from test compilation -->
                     <testExcludes>
                         <testExclude>**/jdbc/*Test.java</testExclude>
