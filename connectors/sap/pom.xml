@@ -17,7 +17,7 @@
         <!-- SAP HANA JDBC driver version - Note: This must be installed manually to local Maven repo -->
         <!-- Download from: https://tools.hana.ondemand.com/#hanatools -->
         <!-- Install with: mvn install:install-file -Dfile=ngdbc.jar -DgroupId=com.sap.cloud.db.jdbc -DartifactId=ngdbc -Dversion=2.19.24 -Dpackaging=jar -->
-        <sap.hana.jdbc.version>2.19.24</sap.hana.jdbc.version>
+        <sap.hana.jdbc.version>2.26.12</sap.hana.jdbc.version>
         <hikaricp.version>5.1.0</hikaricp.version>
         <rocksdb.version>8.11.3</rocksdb.version>
     </properties>
@@ -69,13 +69,11 @@
         <!-- SAP HANA JDBC Driver - Must be installed manually to local Maven repo -->
         <!-- Download from SAP: https://tools.hana.ondemand.com/#hanatools -->
         <!-- Then install: mvn install:install-file -Dfile=ngdbc.jar -DgroupId=com.sap.cloud.db.jdbc -DartifactId=ngdbc -Dversion=2.19.24 -Dpackaging=jar -->
-        <!--
         <dependency>
-            <groupId>com.sap.cloud.db.jdbc</groupId>
-            <artifactId>ngdbc</artifactId>
-            <version>${sap.hana.jdbc.version}</version>
+             <groupId>com.sap.cloud.db.jdbc</groupId>
+             <artifactId>ngdbc</artifactId>
+             <version>${sap.hana.jdbc.version}</version>
         </dependency>
-        -->
 
         <dependency>
             <groupId>com.zaxxer</groupId>
